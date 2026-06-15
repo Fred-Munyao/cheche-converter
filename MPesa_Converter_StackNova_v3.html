@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-Pesa Statement Converter — Cheche</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f4f0;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem}
+.app{background:white;border-radius:14px;padding:2rem;max-width:620px;width:100%;box-shadow:0 2px 16px rgba(0,0,0,0.08)}
+.badge{background:#007A3D;color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;display:inline-block;margin-bottom:8px;letter-spacing:.06em}
+h1{font-size:20px;font-weight:600;color:#111;margin-bottom:4px}
+.tagline{font-size:13px;color:#777;margin-bottom:1.5rem}
+.upload-zone{border:2px dashed #ccc;border-radius:10px;padding:2.5rem 1rem;text-align:center;cursor:pointer;background:#fafafa;transition:all .2s;margin-bottom:1rem}
+.upload-zone:hover,.upload-zone.dragover{border-color:#007A3D;background:#f0faf5}
+.upload-icon{font-size:38px;margin-bottom:10px}
+.upload-title{font-size:15px;font-weight:500;color:#222;margin-bottom:4px}
+.upload-sub{font-size:13px;color:#999}
+input[type=file]{display:none}
+.file-selected{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f0faf5;border-radius:8px;border:1px solid #c8e6d4;margin-bottom:1rem}
+.file-name{font-size:13px;font-weight:500;color:#111;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-size{font-size:12px;color:#888}
+.password-section{background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem}
+.password-title{font-size:13px;font-weight:600;color:#5d4037;margin-bottom:4px}
+.password-hint{font-size:12px;color:#8d6e63;margin-bottom:10px;line-height:1.5}
+.password-row{display:flex;gap:8px;align-items:center}
+.password-input{flex:1;padding:9px 12px;border:1px solid #ddd;border-radius:7px;font-size:14px;color:#111;background:white}
+.password-input:focus{outline:none;border-color:#007A3D}
+.toggle-pw{padding:9px 12px;border:1px solid #ddd;border-radius:7px;background:white;cursor:pointer;font-size:13px;color:#555}
+.pw-tip{font-size:11px;margin-top:6px;color:#888}
+.wrong-pw{padding:8px 12px;background:#fff3e0;border:1px solid #ffe0b2;border-radius:7px;font-size:12px;color:#e65100;margin-top:8px;display:none}
+.security-note{margin-bottom:1rem;padding:10px 14px;background:#f0faf5;border-radius:8px;font-size:12px;color:#2e7d32;display:flex;gap:8px;align-items:flex-start}
+.divider{height:1px;background:#eee;margin:1rem 0}
+
+/* ── FILTER SECTION ── */
+.filter-section{background:#f8f9fa;border:1px solid #e0e0e0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem}
+.filter-title{font-size:13px;font-weight:600;color:#333;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.filter-hint{font-size:12px;color:#888;margin-bottom:10px;line-height:1.5}
+.filter-input-row{display:flex;gap:8px}
+.filter-input{flex:1;padding:9px 12px;border:1px solid #ddd;border-radius:7px;font-size:13px;color:#111;background:white}
+.filter-input:focus{outline:none;border-color:#007A3D}
+.filter-clear{padding:9px 12px;border:1px solid #ddd;border-radius:7px;background:white;cursor:pointer;font-size:13px;color:#888}
+.filter-clear:hover{background:#f5f5f5;color:#333}
+.filter-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:0}
+.filter-tag{display:flex;align-items:center;gap:4px;background:#e8f5e9;border:1px solid #c8e6c9;border-radius:99px;padding:3px 10px;font-size:12px;color:#2e7d32;font-weight:500}
+.filter-tag .remove{cursor:pointer;color:#888;font-size:14px;line-height:1;margin-left:2px}
+.filter-tag .remove:hover{color:#c62828}
+.filter-info{font-size:11px;color:#888;margin-top:6px}
+
+.btn-process{width:100%;padding:13px;background:#007A3D;color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-process:hover{background:#005C2E}
+.btn-process:disabled{background:#bbb;cursor:not-allowed}
+.progress-section{margin-top:1.5rem}
+.progress-label{font-size:13px;color:#555;margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-bar-bg{background:#eee;border-radius:99px;height:10px;overflow:hidden}
+.progress-bar-fill{height:100%;background:#007A3D;border-radius:99px;transition:width .4s ease}
+.steps{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.step{display:flex;align-items:center;gap:8px;font-size:13px;color:#bbb}
+.step.done{color:#007A3D;font-weight:500}
+.step.active{color:#111;font-weight:500}
+.step-dot{width:22px;height:22px;border-radius:50%;border:2px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.step.done .step-dot{background:#007A3D;border-color:#007A3D;color:white}
+.step.active .step-dot{border-color:#007A3D;color:#007A3D}
+.method-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-left:6px}
+.method-text{background:#e3f2fd;color:#1565c0}
+.method-ocr{background:#fff3e0;color:#e65100}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.metric-card{background:#f9f9f9;border-radius:8px;padding:12px;border:1px solid #eee}
+.metric-label{font-size:12px;color:#888;margin-bottom:4px}
+.metric-value{font-size:20px;font-weight:600;color:#111}
+.metric-value.green{color:#007A3D}
+.metric-value.red{color:#C62828}
+table.preview{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:1rem;table-layout:fixed}
+table.preview th{background:#007A3D;color:white;padding:6px 8px;text-align:left}
+table.preview td{padding:5px 8px;border-bottom:1px solid #f0f0f0;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table.preview tr:nth-child(even) td{background:#fafafa}
+.highlight{background:#fff176;border-radius:2px;font-weight:600}
+.btn-download{width:100%;padding:12px;background:#007A3D;color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px}
+.btn-download:hover{background:#005C2E}
+.btn-download-filtered{width:100%;padding:12px;background:#1565c0;color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px}
+.btn-download-filtered:hover{background:#0d47a1}
+.btn-reset{width:100%;padding:9px;background:transparent;color:#666;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer}
+.btn-reset:hover{background:#f5f5f5}
+.results-box{margin-top:1.5rem;padding:1.25rem;border:1px solid #e0e0e0;border-radius:10px}
+.results-title{font-size:15px;font-weight:600;color:#007A3D;margin-bottom:1rem}
+.filter-result-bar{background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:8px 12px;margin-bottom:1rem;font-size:13px;color:#1565c0;display:flex;align-items:center;justify-content:space-between}
+.error-box{padding:12px 14px;background:#fff5f5;border:1px solid #ffcdd2;border-radius:8px;font-size:13px;color:#c62828;margin-top:1rem}
+.how-section{margin-top:2rem;padding-top:1.5rem;border-top:1px solid #eee}
+.how-title{font-size:12px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.how-step{text-align:center;padding:10px 6px}
+.how-step-icon{font-size:24px;margin-bottom:6px}
+.how-step-label{font-size:11px;color:#888;line-height:1.5}
+.footer{text-align:center;font-size:11px;color:#ccc;margin-top:1.5rem}
+.version-badge{display:inline-block;background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;margin-left:6px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="app">
+  <span class="badge">Cheche</span>
+  <h1>M-Pesa Statement Converter <span class="version-badge">v3.2</span></h1>
+  <p class="tagline">Upload your M-Pesa PDF — direct text extraction, filter by name or keyword</p>
+
+  <div id="upload-section">
+    <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <div class="upload-icon">📄</div>
+      <div class="upload-title">Drop your M-Pesa PDF statement here</div>
+      <div class="upload-sub">or click to browse · PDF files only · password-protected supported</div>
+    </div>
+    <input type="file" id="file-input" accept=".pdf"/>
+
+    <div id="file-info" style="display:none" class="file-selected">
+      <span style="font-size:20px">📋</span>
+      <span class="file-name" id="file-name-label"></span>
+      <span class="file-size" id="file-size-label"></span>
+    </div>
+
+    <div class="password-section">
+      <div class="password-title">🔒 Statement Password</div>
+      <div class="password-hint">
+        Safaricom sends a <strong>6-digit code via SMS</strong> when you request your statement. That is your password.<br>
+        Leave blank if already unlocked.
+      </div>
+      <div class="password-row">
+        <input type="password" class="password-input" id="pw-input" placeholder="Enter the 6-digit SMS code..." maxlength="6" inputmode="numeric"/>
+        <button class="toggle-pw" onclick="togglePw()" id="toggle-btn">Show</button>
+      </div>
+      <div class="pw-tip">💡 Check your SMS inbox for the 6-digit code Safaricom sent when you requested this statement.</div>
+      <div class="wrong-pw" id="wrong-pw">❌ Wrong password. Please check the 6-digit code from your SMS.</div>
+    </div>
+
+    <!-- ── FILTER SECTION ── -->
+    <div class="filter-section">
+      <div class="filter-title">🔍 Filter Transactions <span style="font-weight:400;color:#888;font-size:12px">(optional)</span></div>
+      <div class="filter-hint">
+        Type a name, business, or keyword to extract only matching transactions.<br>
+        Separate multiple filters with a comma — any match is returned.
+      </div>
+      <div class="filter-input-row">
+        <input type="text" class="filter-input" id="filter-input"
+               placeholder="e.g. Fredrick Wambua, Family Bank, KPLC, ATL..."
+               onkeydown="handleFilterKey(event)"/>
+        <button class="filter-clear" onclick="clearAllFilters()" title="Clear all filters">✕ Clear</button>
+      </div>
+      <div class="filter-tags" id="filter-tags"></div>
+      <div class="filter-info" id="filter-info">Press Enter or comma to add a filter · Leave empty to export all transactions</div>
+    </div>
+
+    <div class="security-note">
+      🔐 <span>Your statement and password are processed entirely in your browser. Nothing is uploaded to any server.</span>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn-process" id="btn-process" onclick="processFile()">⚡ Convert to Excel</button>
+  </div>
+
+  <div id="progress-section" class="progress-section" style="display:none">
+    <div class="progress-label">
+      <span id="progress-text">Starting...</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="steps">
+      <div class="step" id="step-1"><div class="step-dot">1</div> Unlocking PDF</div>
+      <div class="step" id="step-2"><div class="step-dot">2</div> Detecting text layer</div>
+      <div class="step" id="step-3"><div class="step-dot">3</div> Extracting all transactions</div>
+      <div class="step" id="step-4"><div class="step-dot">4</div> Applying filters &amp; building Excel</div>
+    </div>
+  </div>
+
+  <div id="error-section" style="display:none"></div>
+  <div id="results-section" style="display:none"></div>
+
+  <div class="how-section">
+    <div class="how-title">What makes this different</div>
+    <div class="how-steps">
+      <div class="how-step"><div class="how-step-icon">🔓</div><div class="how-step-label">Unlocks password-protected PDFs</div></div>
+      <div class="how-step"><div class="how-step-icon">📝</div><div class="how-step-label">Direct text extraction — 100% accurate</div></div>
+      <div class="how-step"><div class="how-step-icon">🔍</div><div class="how-step-label">Filter by name, business or keyword</div></div>
+      <div class="how-step"><div class="how-step-icon">📊</div><div class="how-step-label">Full details & amounts every row</div></div>
+    </div>
+  </div>
+  <div class="footer">Built by Cheche Technologies · © 2026 · Your data never leaves your device</div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let selectedFile=null, extractedData=null;
+let filterTerms=[];  // active filter terms
+
+// ── FILTER MANAGEMENT ──
+function handleFilterKey(e){
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    addFilterFromInput();
+  }
+}
+
+function addFilterFromInput(){
+  const inp=document.getElementById('filter-input');
+  const raw=inp.value;
+  // Split by comma in case user typed multiple
+  const parts=raw.split(',').map(s=>s.trim()).filter(s=>s.length>0);
+  parts.forEach(term=>{
+    const upper=term.toUpperCase();
+    if(!filterTerms.includes(upper)) filterTerms.push(upper);
+  });
+  inp.value='';
+  renderFilterTags();
+}
+
+function removeFilter(term){
+  filterTerms=filterTerms.filter(t=>t!==term);
+  renderFilterTags();
+}
+
+function clearAllFilters(){
+  filterTerms=[];
+  document.getElementById('filter-input').value='';
+  renderFilterTags();
+}
+
+function renderFilterTags(){
+  const container=document.getElementById('filter-tags');
+  const info=document.getElementById('filter-info');
+  container.innerHTML='';
+  filterTerms.forEach(term=>{
+    const tag=document.createElement('div');
+    tag.className='filter-tag';
+    tag.innerHTML=`${term} <span class="remove" onclick="removeFilter('${term.replace(/'/g,"\\'")}')">×</span>`;
+    container.appendChild(tag);
+  });
+  if(filterTerms.length===0){
+    info.textContent='Press Enter or comma to add a filter · Leave empty to export all transactions';
+  } else {
+    info.textContent=`${filterTerms.length} filter${filterTerms.length>1?'s':''} active — matching rows: any filter must appear in Details, Receipt No., or Date`;
+  }
+}
+
+// Also add filter when user types comma in the input
+document.addEventListener('DOMContentLoaded',()=>{
+  const inp=document.getElementById('filter-input');
+  if(inp){
+    inp.addEventListener('input',e=>{
+      if(e.target.value.includes(',')){
+        addFilterFromInput();
+      }
+    });
+  }
+});
+
+// ── TRANSACTION FILTER ──
+function matchesFilters(txn, terms){
+  if(!terms||terms.length===0) return true;
+  // Search across receipt, datetime, and details — case insensitive
+  const haystack=(
+    (txn.receipt||'') + ' ' +
+    (txn.datetime||'') + ' ' +
+    (txn.details||'')
+  ).toUpperCase();
+  // OR logic — any term matches = include
+  return terms.some(term=>haystack.includes(term));
+}
+
+// ── PDF LOADING ──
+const dropZone=document.getElementById('drop-zone');
+const fileInput=document.getElementById('file-input');
+
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('dragover')});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop',e=>{
+  e.preventDefault();dropZone.classList.remove('dragover');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type==='application/pdf')handleFile(f);
+  else showError('Please upload a PDF file.');
+});
+fileInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0])});
+
+function handleFile(file){
+  selectedFile=file;
+  document.getElementById('file-name-label').textContent=file.name;
+  document.getElementById('file-size-label').textContent=(file.size/1024).toFixed(0)+' KB';
+  document.getElementById('file-info').style.display='flex';
+  document.getElementById('error-section').style.display='none';
+  document.getElementById('results-section').style.display='none';
+  document.getElementById('wrong-pw').style.display='none';
+}
+
+function togglePw(){
+  const inp=document.getElementById('pw-input'),btn=document.getElementById('toggle-btn');
+  inp.type=inp.type==='password'?'text':'password';
+  btn.textContent=inp.type==='password'?'Show':'Hide';
+}
+
+function setStep(num){
+  for(let i=1;i<=4;i++){
+    const el=document.getElementById('step-'+i);
+    el.classList.remove('done','active');
+    if(i<num){el.classList.add('done');el.querySelector('.step-dot').textContent='✓';}
+    else if(i===num)el.classList.add('active');
+  }
+}
+
+function setProgress(pct,text){
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-pct').textContent=pct+'%';
+  document.getElementById('progress-text').textContent=text;
+}
+
+function showError(msg){
+  document.getElementById('error-section').innerHTML='<div class="error-box">⚠️ '+msg+'</div>';
+  document.getElementById('error-section').style.display='block';
+}
+
+async function loadPDF(ab,password){
+  const params={data:ab};
+  if(password&&password.trim())params.password=password.trim();
+  try{return await pdfjsLib.getDocument(params).promise;}
+  catch(err){
+    if(err.name==='PasswordException'||(err.message||'').toLowerCase().includes('password'))
+      throw new Error(password&&password.trim()?'WRONG_PASSWORD':'NEEDS_PASSWORD');
+    throw err;
+  }
+}
+
+const STAMP_X0=230,STAMP_X1=382,STAMP_Y0=318,STAMP_Y1=474;
+const RECEIPT_RE=/^[A-Z0-9]{8,12}$/;
+const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE=/^\d{2}:\d{2}:\d{2}$/;
+const DATE_IN_STR=/\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}/;
+
+const SKIP=['Page ','Disclaimer','Statement Verif','For self-help','Receipt No',
+  'TRANSACTION','SEND MONEY','RECEIVED MONEY','AGENT','LIPA NA','TOTAL:',
+  'OTHERS:','Customer Name:','Mobile Number:','Email','Statement Period:',
+  'Request Date:','Approved','M-PESA Statement','www.','Safaricom',
+  'To verify','prompts','conditions','Twitter','Facebook','Terms'];
+
+function isSkip(t){
+  if(!t||t.length<3)return true;
+  for(const s of SKIP)if(t.startsWith(s))return true;
+  if(t.includes('safaricom.co.ke')||t.includes('@safaricom'))return true;
+  return false;
+}
+
+function parseNum(s){
+  if(!s)return null;
+  const c=s.replace(/[,\s]/g,'').replace(/[^0-9.\-]/g,'');
+  if(!c)return null;
+  const v=parseFloat(c);
+  return(!isNaN(v)&&Math.abs(v)<5000000)?v:null;
+}
+
+function isBadCont(text){
+  if(DATE_IN_STR.test(text))return true;
+  if(text.includes('Completed'))return true;
+  const p=text.split(/\s+/);
+  return p.length>=2&&RECEIPT_RE.test(p[0])&&DATE_RE.test(p[1]);
+}
+
+async function extractPages(pdf){
+  const pages=[];
+  let totalWords=0;
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i);
+    const vp=page.getViewport({scale:1});
+    const content=await page.getTextContent();
+    const PAID_IN_X=[370,430],WITHDRAWN_X=[430,510],BALANCE_X=[510,612];
+    const items=content.items.filter(item=>{
+      if(!item.str||!item.str.trim())return false;
+      const x=item.transform[4],y=item.transform[5];
+      if(i>1&&x>=STAMP_X0&&x<=STAMP_X1&&y>=STAMP_Y0&&y<=STAMP_Y1)return false;
+      return true;
+    });
+    totalWords+=items.length;
+    const lineMap={};
+    items.forEach(item=>{
+      const x=item.transform[4];
+      const y=vp.height-item.transform[5];
+      const k=Math.round(y/4)*4;
+      if(!lineMap[k])lineMap[k]={det:[],inn:[],out:[],bal:[],y:k};
+      const col=x>=BALANCE_X[0]?'bal':x>=WITHDRAWN_X[0]?'out':x>=PAID_IN_X[0]?'inn':'det';
+      lineMap[k][col].push({text:item.str.trim(),x,y});
+    });
+    pages.push({pageNum:i,lines:Object.values(lineMap).sort((a,b)=>a.y-b.y)});
+    setProgress(10+Math.round((i/pdf.numPages)*35),'Reading page '+i+' of '+pdf.numPages+'...');
+  }
+  return{pages,totalWords};
+}
+
+function parseTransactions(pages){
+  const transactions=[];
+  const MAX_CONT_Y=60;
+  for(const{pageNum,lines}of pages){
+    let current=null,currentY=null;
+    const amountItems=[];
+    for(const line of lines){
+      ['det','inn','out','bal'].forEach(c=>line[c].sort((a,b)=>a.x-b.x));
+      const detText=line.det.map(w=>w.text).join(' ').trim();
+      const innText=line.inn.map(w=>w.text).join(' ').trim();
+      const outText=line.out.map(w=>w.text).join(' ').trim();
+      const balText=line.bal.map(w=>w.text).join(' ').trim();
+      const innVal=parseNum(innText);
+      const outVal=parseNum(outText);
+      const balVal=parseNum(balText);
+      if(innVal!==null)amountItems.push({val:innVal,col:'inn',y:line.y});
+      if(outVal!==null)amountItems.push({val:outVal<0?outVal:-outVal,col:'out',y:line.y});
+      if(balVal!==null)amountItems.push({val:balVal,col:'bal',y:line.y});
+      if(isSkip(detText))continue;
+      const parts=detText.split(/\s+/);
+      const isNew=parts.length>=3&&RECEIPT_RE.test(parts[0])&&DATE_RE.test(parts[1]);
+      if(isNew){
+        if(current)transactions.push(current);
+        const receipt=parts[0];
+        const dateP=parts[1];
+        const timeP=parts[2]&&TIME_RE.test(parts[2])?parts[2]:'00:00:00';
+        const skipLen=parts[0].length+1+dateP.length+1+timeP.length;
+        let rawDet=detText.substring(skipLen).trim().replace(/[|\\]/g,' ').trim();
+        const cp=rawDet.indexOf('Completed');
+        if(cp>=0)rawDet=rawDet.substring(0,cp).trim();
+        rawDet=rawDet.replace(/[-_|]+\s*$/,'').trim();
+        current={receipt,datetime:dateP+' '+timeP,details:rawDet,
+                 paid_in:null,withdrawn:null,balance:null,page:pageNum,y:line.y};
+        currentY=line.y;
+      } else if(current){
+        const distY=line.y-currentY;
+        if(distY>MAX_CONT_Y||isBadCont(detText)){
+          transactions.push(current);current=null;currentY=null;continue;
+        }
+        const cont=detText.replace(/[|\\]/g,' ').trim();
+        if(cont&&cont.length>2&&!/^[-_|\s]{0,5}$/.test(cont))
+          current.details=(current.details+' '+cont).trim();
+      }
+    }
+    if(current)transactions.push(current);
+    const TOL=8;
+    for(const amt of amountItems){
+      let best=null,bestDist=TOL*8;
+      for(const txn of transactions){
+        if(txn.page!==pageNum)continue;
+        const dist=amt.y-txn.y;
+        if(dist>=-TOL&&dist<=TOL*8&&Math.abs(dist)<bestDist){
+          bestDist=Math.abs(dist);best=txn;
+        }
+      }
+      if(!best)continue;
+      if(amt.col==='inn'&&best.paid_in===null)best.paid_in=amt.val;
+      else if(amt.col==='out'&&best.withdrawn===null)best.withdrawn=amt.val;
+      else if(amt.col==='bal'&&best.balance===null)best.balance=amt.val;
+    }
+  }
+  transactions.forEach(t=>delete t.y);
+  return transactions;
+}
+
+// ── HIGHLIGHT matching terms in text ──
+function highlight(text, terms){
+  if(!terms||terms.length===0) return escHtml(text);
+  let result=escHtml(text);
+  terms.forEach(term=>{
+    const re=new RegExp('('+escRegex(term)+')','gi');
+    result=result.replace(re,'<span class="highlight">$1</span>');
+  });
+  return result;
+}
+function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escRegex(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+
+function buildExcel(transactions, method, filterTerms){
+  const wb=XLSX.utils.book_new();
+
+  // Sheet 1: filtered or all transactions
+  const isFiltered=filterTerms&&filterTerms.length>0;
+  const sheetName=isFiltered?'Filtered Transactions':'All Transactions';
+  const rows=[['#','Receipt No.','Date & Time','Details','Paid In (KES)','Withdrawn (KES)','Balance (KES)','Page']];
+  transactions.forEach((t,i)=>rows.push([
+    i+1,t.receipt,t.datetime,t.details,
+    t.paid_in!=null?t.paid_in:'',
+    t.withdrawn!=null?t.withdrawn:'',
+    t.balance!=null?t.balance:'',
+    t.page
+  ]));
+  const ws1=XLSX.utils.aoa_to_sheet(rows);
+  ws1['!cols']=[{wch:5},{wch:14},{wch:20},{wch:65},{wch:16},{wch:16},{wch:16},{wch:5}];
+  XLSX.utils.book_append_sheet(wb,ws1,sheetName);
+
+  // Sheet 2: Summary
+  const totalIn=transactions.reduce((s,t)=>s+(t.paid_in||0),0);
+  const totalOut=transactions.reduce((s,t)=>s+(t.withdrawn||0),0);
+  const net=totalIn+totalOut;
+  const filterNote=isFiltered
+    ?'Filters applied: '+filterTerms.join(', ')
+    :'No filter — all transactions';
+  const sum=[
+    ['M-PESA STATEMENT SUMMARY — Cheche v3.2'],[''],
+    ['Extraction Method',method],
+    ['Filter Applied',filterNote],
+    ['Total Rows',transactions.length],
+    ['Total Paid In (KES)',parseFloat(totalIn.toFixed(2))],
+    ['Total Withdrawn (KES)',parseFloat(totalOut.toFixed(2))],
+    ['Net Cash Flow (KES)',parseFloat(net.toFixed(2))],
+  ];
+  const ws2=XLSX.utils.aoa_to_sheet(sum);
+  ws2['!cols']=[{wch:30},{wch:55}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Summary');
+  return{wb,totalIn,totalOut,net,count:transactions.length};
+}
+
+async function processFile(){
+  if(!selectedFile){showError('Please select a PDF file first.');return;}
+
+  // Commit any pending filter text
+  const pendingFilter=document.getElementById('filter-input').value.trim();
+  if(pendingFilter) addFilterFromInput();
+
+  const password=document.getElementById('pw-input').value;
+  document.getElementById('wrong-pw').style.display='none';
+  document.getElementById('error-section').style.display='none';
+  document.getElementById('results-section').style.display='none';
+  document.getElementById('progress-section').style.display='block';
+  document.getElementById('btn-process').disabled=true;
+
+  try{
+    setStep(1);setProgress(5,'Unlocking PDF...');
+    const ab=await selectedFile.arrayBuffer();
+    let pdf;
+    try{pdf=await loadPDF(ab,password);}
+    catch(err){
+      document.getElementById('progress-section').style.display='none';
+      document.getElementById('btn-process').disabled=false;
+      if(err.message==='WRONG_PASSWORD'){
+        document.getElementById('wrong-pw').style.display='block';
+        document.getElementById('pw-input').focus();
+      }else if(err.message==='NEEDS_PASSWORD'){
+        document.getElementById('wrong-pw').textContent='🔒 This PDF is password protected. Enter the 6-digit code from your SMS.';
+        document.getElementById('wrong-pw').style.display='block';
+        document.getElementById('pw-input').focus();
+      }else showError('Could not open PDF: '+err.message);
+      return;
+    }
+
+    setStep(2);setProgress(10,'Detecting text layer...');
+    const testPage=await pdf.getPage(1);
+    const testContent=await testPage.getTextContent();
+    const hasTextLayer=testContent.items.some(item=>item.str&&item.str.trim().length>2);
+    const method=hasTextLayer
+      ?'Direct text extraction (100% accurate)'
+      :'Coordinate-based extraction (print-to-PDF mode)';
+
+    setStep(3);
+    setProgress(15,hasTextLayer?'Text layer found — extracting directly...':'Image PDF — using smart extraction...');
+    const{pages}=await extractPages(pdf);
+
+    setProgress(55,'Parsing transactions...');
+    await new Promise(r=>setTimeout(r,100));
+    const allTransactions=parseTransactions(pages);
+
+    // Apply filters
+    setStep(4);setProgress(80,'Applying filters...');
+    await new Promise(r=>setTimeout(r,100));
+
+    const activeFilters=[...filterTerms];
+    const filtered=allTransactions.filter(t=>matchesFilters(t,activeFilters));
+
+    setProgress(88,'Building Excel...');
+    await new Promise(r=>setTimeout(r,300));
+    const{wb,totalIn,totalOut,net,count}=buildExcel(filtered,method,activeFilters);
+    setProgress(100,'Done! ✓');
+
+    extractedData={
+      wb, allTransactions, filtered,
+      totalIn, totalOut, net, count,
+      method, activeFilters
+    };
+    showResults(filtered,allTransactions.length,totalIn,totalOut,net,count,method,activeFilters);
+
+  }catch(err){
+    document.getElementById('progress-section').style.display='none';
+    document.getElementById('btn-process').disabled=false;
+    showError('An error occurred: '+err.message);
+  }
+}
+
+function showResults(transactions,totalAll,totalIn,totalOut,net,count,method,activeFilters){
+  const absOut=Math.abs(totalOut);
+  const fmt=n=>Math.abs(n).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const isText=method.includes('Direct');
+  const isFiltered=activeFilters&&activeFilters.length>0;
+  const methodBadge=`<span class="method-badge ${isText?'method-text':'method-ocr'}">${isText?'📝 Text Layer':'🔍 Smart Extract'}</span>`;
+
+  const filterBar=isFiltered
+    ?`<div class="filter-result-bar">
+        🔍 Showing <strong>${count.toLocaleString()}</strong> of ${totalAll.toLocaleString()} transactions matching:
+        ${activeFilters.map(t=>`<strong>"${t}"</strong>`).join(', ')}
+      </div>`
+    :'';
+
+  const preview=transactions.slice(0,6).map(t=>{
+    const detHighlighted=highlight((t.details||'').substring(0,42)+(t.details||'').length>42?'...':'',activeFilters);
+    return`<tr>
+      <td style="width:85px">${escHtml(t.receipt)}</td>
+      <td style="width:88px">${(t.datetime||'').substring(0,10)}</td>
+      <td>${detHighlighted}</td>
+      <td style="text-align:right;width:80px;color:${t.paid_in?'#007A3D':'#C62828'};font-weight:500">
+        ${t.paid_in?'+'+fmt(t.paid_in):t.withdrawn?'-'+fmt(Math.abs(t.withdrawn)):'—'}
+      </td>
+    </tr>`;
+  }).join('');
+
+  const downloadButtons=isFiltered
+    ?`<button class="btn-download-filtered" onclick="downloadExcel()">📥 Download Filtered Excel (${count} rows)</button>
+      <button class="btn-download" onclick="downloadAll()" style="margin-bottom:8px">📥 Download All Transactions (${totalAll} rows)</button>`
+    :`<button class="btn-download" onclick="downloadExcel()">📥 Download Excel File (${count} rows)</button>`;
+
+  document.getElementById('results-section').innerHTML=`
+    <div class="results-box">
+      <div class="results-title">✅ Done — ${count.toLocaleString()} transactions ${methodBadge}</div>
+      ${filterBar}
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-label">Total received</div><div class="metric-value green">KES ${fmt(totalIn)}</div></div>
+        <div class="metric-card"><div class="metric-label">Total paid out</div><div class="metric-value red">KES ${fmt(absOut)}</div></div>
+        <div class="metric-card"><div class="metric-label">Net cash flow</div><div class="metric-value ${net>=0?'green':'red'}">${net<0?'-':''}KES ${fmt(net)}</div></div>
+        <div class="metric-card"><div class="metric-label">${isFiltered?'Matched':'Total'} rows</div><div class="metric-value">${count.toLocaleString()}</div></div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Preview</div>
+      <div style="overflow-x:auto;margin-bottom:1rem">
+        <table class="preview">
+          <thead><tr><th>Receipt</th><th>Date</th><th>Details</th><th>Amount</th></tr></thead>
+          <tbody>${preview}</tbody>
+        </table>
+      </div>
+      ${downloadButtons}
+      <button class="btn-reset" onclick="resetApp()" style="margin-top:12px;padding:11px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;width:100%;font-size:14px;cursor:pointer;color:#333;font-weight:500;">✕ Clear &amp; Upload New Statement</button>
+    </div>`;
+  document.getElementById('results-section').style.display='block';
+}
+
+function downloadExcel(){
+  if(!extractedData)return;
+  const isFiltered=extractedData.activeFilters&&extractedData.activeFilters.length>0;
+  const suffix=isFiltered?'_filtered':'_all';
+  const name=(selectedFile?selectedFile.name.replace('.pdf',''):'mpesa_statement')+suffix+'_Cheche.xlsx';
+  XLSX.writeFile(extractedData.wb,name);
+}
+
+function downloadAll(){
+  if(!extractedData)return;
+  // Rebuild excel with all transactions, no filter
+  const{wb}=buildExcel(extractedData.allTransactions,extractedData.method,[]);
+  const name=(selectedFile?selectedFile.name.replace('.pdf',''):'mpesa_statement')+'_all_Cheche.xlsx';
+  XLSX.writeFile(wb,name);
+}
+
+function resetApp(){
+  selectedFile=null;extractedData=null;
+  fileInput.value='';
+  document.getElementById('pw-input').value='';
+  document.getElementById('pw-input').type='password';
+  document.getElementById('toggle-btn').textContent='Show';
+  document.getElementById('file-info').style.display='none';
+  document.getElementById('wrong-pw').style.display='none';
+  document.getElementById('progress-section').style.display='none';
+  document.getElementById('results-section').style.display='none';
+  document.getElementById('error-section').style.display='none';
+  document.getElementById('btn-process').disabled=false;
+  for(let i=1;i<=4;i++){
+    const el=document.getElementById('step-'+i);
+    el.classList.remove('done','active');
+    el.querySelector('.step-dot').textContent=i;
+  }
+  setProgress(0,'');
+}
+</script>
+</body>
+</html>
