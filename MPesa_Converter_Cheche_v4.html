@@ -3,191 +3,363 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>M-Pesa Statement Converter — Cheche</title>
+<title>M-Pesa Statement Converter — Cheche Technologies</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f4f0;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem}
-.app{background:white;border-radius:14px;padding:2rem;max-width:620px;width:100%;box-shadow:0 2px 16px rgba(0,0,0,0.08)}
-.badge{background:#007A3D;color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;display:inline-block;margin-bottom:8px;letter-spacing:.06em}
-h1{font-size:20px;font-weight:600;color:#111;margin-bottom:4px}
-.tagline{font-size:13px;color:#777;margin-bottom:1.5rem}
-.upload-zone{border:2px dashed #ccc;border-radius:10px;padding:2.5rem 1rem;text-align:center;cursor:pointer;background:#fafafa;transition:all .2s;margin-bottom:1rem}
-.upload-zone:hover,.upload-zone.dragover{border-color:#007A3D;background:#f0faf5}
-.upload-icon{font-size:38px;margin-bottom:10px}
-.upload-title{font-size:15px;font-weight:500;color:#222;margin-bottom:4px}
-.upload-sub{font-size:13px;color:#999}
-input[type=file]{display:none}
-.file-selected{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f0faf5;border-radius:8px;border:1px solid #c8e6d4;margin-bottom:1rem}
-.file-name{font-size:13px;font-weight:500;color:#111;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.file-size{font-size:12px;color:#888}
-.password-section{background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem}
-.password-title{font-size:13px;font-weight:600;color:#5d4037;margin-bottom:4px}
-.password-hint{font-size:12px;color:#8d6e63;margin-bottom:10px;line-height:1.5}
-.password-row{display:flex;gap:8px;align-items:center}
-.password-input{flex:1;padding:9px 12px;border:1px solid #ddd;border-radius:7px;font-size:14px;color:#111;background:white}
-.password-input:focus{outline:none;border-color:#007A3D}
-.toggle-pw{padding:9px 12px;border:1px solid #ddd;border-radius:7px;background:white;cursor:pointer;font-size:13px;color:#555}
-.pw-tip{font-size:11px;margin-top:6px;color:#888}
-.wrong-pw{padding:8px 12px;background:#fff3e0;border:1px solid #ffe0b2;border-radius:7px;font-size:12px;color:#e65100;margin-top:8px;display:none}
-.security-note{margin-bottom:1rem;padding:10px 14px;background:#f0faf5;border-radius:8px;font-size:12px;color:#2e7d32;display:flex;gap:8px;align-items:flex-start}
-.divider{height:1px;background:#eee;margin:1rem 0}
+:root{
+  --green:#007A3D;--green-dark:#005C2E;--green-light:#E8F5E9;--green-mid:#C8E6C9;
+  --red:#C62828;--red-light:#FFF5F5;
+  --blue:#1565C0;--blue-light:#E3F2FD;
+  --orange:#E65100;--orange-light:#FFF3E0;
+  --ink:#111827;--grey:#6B7280;--border:#E5E7EB;--bg:#F3F4F6;--white:#FFFFFF;
+  --amber:#FFF8E1;--amber-border:#FFE082;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);min-height:100vh;color:var(--ink)}
 
-/* ── FILTER SECTION ── */
-.filter-section{background:#f8f9fa;border:1px solid #e0e0e0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem}
-.filter-title{font-size:13px;font-weight:600;color:#333;margin-bottom:4px;display:flex;align-items:center;gap:6px}
-.filter-hint{font-size:12px;color:#888;margin-bottom:10px;line-height:1.5}
-.filter-input-row{display:flex;gap:8px}
-.filter-input{flex:1;padding:9px 12px;border:1px solid #ddd;border-radius:7px;font-size:13px;color:#111;background:white}
-.filter-input:focus{outline:none;border-color:#007A3D}
-.filter-clear{padding:9px 12px;border:1px solid #ddd;border-radius:7px;background:white;cursor:pointer;font-size:13px;color:#888}
-.filter-clear:hover{background:#f5f5f5;color:#333}
-.filter-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:0}
-.filter-tag{display:flex;align-items:center;gap:4px;background:#e8f5e9;border:1px solid #c8e6c9;border-radius:99px;padding:3px 10px;font-size:12px;color:#2e7d32;font-weight:500}
-.filter-tag .remove{cursor:pointer;color:#888;font-size:14px;line-height:1;margin-left:2px}
-.filter-tag .remove:hover{color:#c62828}
-.filter-info{font-size:11px;color:#888;margin-top:6px}
+/* NAV */
+nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-mark{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:15px}
+.nav-name{font-weight:700;font-size:15px;color:var(--ink)}
+.nav-badge{font-size:10px;font-weight:600;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:99px}
+.nav-sub{font-size:12px;color:var(--grey)}
 
-.btn-process{width:100%;padding:13px;background:#007A3D;color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer}
-.btn-process:hover{background:#005C2E}
-.btn-process:disabled{background:#bbb;cursor:not-allowed}
-.progress-section{margin-top:1.5rem}
-.progress-label{font-size:13px;color:#555;margin-bottom:6px;display:flex;justify-content:space-between}
-.progress-bar-bg{background:#eee;border-radius:99px;height:10px;overflow:hidden}
-.progress-bar-fill{height:100%;background:#007A3D;border-radius:99px;transition:width .4s ease}
-.steps{margin-top:12px;display:flex;flex-direction:column;gap:8px}
-.step{display:flex;align-items:center;gap:8px;font-size:13px;color:#bbb}
-.step.done{color:#007A3D;font-weight:500}
-.step.active{color:#111;font-weight:500}
-.step-dot{width:22px;height:22px;border-radius:50%;border:2px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
-.step.done .step-dot{background:#007A3D;border-color:#007A3D;color:white}
-.step.active .step-dot{border-color:#007A3D;color:#007A3D}
-.method-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-left:6px}
-.method-text{background:#e3f2fd;color:#1565c0}
-.method-ocr{background:#fff3e0;color:#e65100}
-.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
-.metric-card{background:#f9f9f9;border-radius:8px;padding:12px;border:1px solid #eee}
-.metric-label{font-size:12px;color:#888;margin-bottom:4px}
-.metric-value{font-size:20px;font-weight:600;color:#111}
-.metric-value.green{color:#007A3D}
-.metric-value.red{color:#C62828}
-table.preview{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:1rem;table-layout:fixed}
-table.preview th{background:#007A3D;color:white;padding:6px 8px;text-align:left}
-table.preview td{padding:5px 8px;border-bottom:1px solid #f0f0f0;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-table.preview tr:nth-child(even) td{background:#fafafa}
-.highlight{background:#fff176;border-radius:2px;font-weight:600}
-.btn-download{width:100%;padding:12px;background:#007A3D;color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px}
-.btn-download:hover{background:#005C2E}
-.btn-download-filtered{width:100%;padding:12px;background:#1565c0;color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px}
-.btn-download-filtered:hover{background:#0d47a1}
-.btn-reset{width:100%;padding:9px;background:transparent;color:#666;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer}
-.btn-reset:hover{background:#f5f5f5}
-.results-box{margin-top:1.5rem;padding:1.25rem;border:1px solid #e0e0e0;border-radius:10px}
-.results-title{font-size:15px;font-weight:600;color:#007A3D;margin-bottom:1rem}
-.filter-result-bar{background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:8px 12px;margin-bottom:1rem;font-size:13px;color:#1565c0;display:flex;align-items:center;justify-content:space-between}
-.error-box{padding:12px 14px;background:#fff5f5;border:1px solid #ffcdd2;border-radius:8px;font-size:13px;color:#c62828;margin-top:1rem}
-.how-section{margin-top:2rem;padding-top:1.5rem;border-top:1px solid #eee}
-.how-title{font-size:12px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
-.how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.how-step{text-align:center;padding:10px 6px}
-.how-step-icon{font-size:24px;margin-bottom:6px}
-.how-step-label{font-size:11px;color:#888;line-height:1.5}
-.footer{text-align:center;font-size:11px;color:#ccc;margin-top:1.5rem}
-.version-badge{display:inline-block;background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;margin-left:6px;vertical-align:middle}
+/* LAYOUT */
+.page{max-width:1200px;margin:0 auto;padding:1.5rem;display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start;min-width:0}
+@media(max-width:800px){.page{grid-template-columns:1fr}}
+
+/* LEFT PANEL */
+.left-panel{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);overflow:hidden;min-width:0}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border)}
+.card-title{font-size:13px;font-weight:600;color:var(--ink)}
+.card-sub{font-size:11px;color:var(--grey);margin-top:2px}
+.card-body{padding:14px 18px}
+
+/* Upload */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:1.5rem 1rem;text-align:center;cursor:pointer;background:var(--bg);transition:all .2s;display:block}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--green);background:var(--green-light)}
+.upload-icon{font-size:28px;margin-bottom:6px}
+.upload-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:2px}
+.upload-sub{font-size:11px;color:var(--grey)}
+.file-chip{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--green-light);border-radius:8px;border:1px solid var(--green-mid);margin-top:10px;min-width:0}
+.file-chip-name{font-size:11px;font-weight:500;color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.file-chip-size{font-size:11px;color:var(--grey);white-space:nowrap;flex-shrink:0}
+.btn-clear{padding:3px 8px;background:var(--red-light);border:1px solid #FFCDD2;border-radius:5px;color:var(--red);font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap;flex-shrink:0}
+.size-warning{margin-top:8px;padding:8px 12px;background:var(--amber);border:1px solid var(--amber-border);border-radius:8px;font-size:11px;color:#5D4037;line-height:1.6}
+
+/* Password */
+.pw-hint{font-size:12px;color:var(--grey);margin-bottom:8px;line-height:1.6}
+.input-row{display:flex;gap:8px}
+.text-input{flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--ink);min-width:0}
+.text-input:focus{outline:none;border-color:var(--green)}
+.btn-toggle{padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:12px;color:var(--grey);font-family:inherit;white-space:nowrap;flex-shrink:0}
+.pw-tip{font-size:11px;color:var(--grey);margin-top:6px}
+.wrong-pw{display:none;margin-top:8px;padding:8px 12px;background:var(--orange-light);border:1px solid #FFCC80;border-radius:7px;font-size:12px;color:var(--orange)}
+
+/* Filter */
+.filter-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.filter-tag{display:flex;align-items:center;gap:4px;background:var(--green-light);border:1px solid var(--green-mid);border-radius:99px;padding:2px 8px;font-size:11px;color:var(--green);font-weight:500}
+.filter-tag .rm{cursor:pointer;color:var(--grey)}
+.filter-info{font-size:11px;color:var(--grey);margin-top:5px}
+
+/* Security */
+.security-note{display:flex;gap:8px;align-items:flex-start;padding:10px 14px;background:#F0FDF4;border-radius:8px;border:1px solid var(--green-mid);font-size:11px;color:#166534;line-height:1.5}
+
+/* Process */
+.btn-process{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:9px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}
+.btn-process:hover{background:var(--green-dark)}
+.btn-process:disabled{background:#9CA3AF;cursor:not-allowed}
+
+/* Progress */
+.progress-wrap{padding:14px 18px}
+.prog-label{font-size:12px;color:var(--grey);margin-bottom:5px;display:flex;justify-content:space-between}
+.prog-bg{background:var(--border);border-radius:99px;height:6px;overflow:hidden;margin-bottom:12px}
+.prog-fill{height:100%;background:var(--green);border-radius:99px;transition:width .4s ease}
+.steps{display:flex;flex-direction:column;gap:7px}
+.step{display:flex;align-items:center;gap:8px;font-size:12px;color:#9CA3AF}
+.step.done{color:var(--green);font-weight:500}
+.step.active{color:var(--ink);font-weight:500}
+.step-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.step.done .step-dot{background:var(--green);border-color:var(--green);color:white}
+.step.active .step-dot{border-color:var(--green);color:var(--green)}
+
+/* Diff grid */
+.diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.diff-item{display:flex;align-items:flex-start;gap:8px}
+.diff-icon{width:28px;height:28px;background:var(--green-light);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.diff-label{font-size:11px;color:var(--grey);line-height:1.5;padding-top:3px}
+
+/* RIGHT PANEL */
+.right-panel{display:flex;flex-direction:column;gap:16px;min-width:0}
+.right-empty{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:3rem 2rem;text-align:center}
+.empty-icon{font-size:44px;opacity:.25;margin-bottom:10px}
+.empty-title{font-size:14px;font-weight:600;color:var(--grey);margin-bottom:4px}
+.empty-sub{font-size:12px;color:#9CA3AF}
+
+/* Results card */
+.results-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.results-title{font-size:14px;font-weight:600;color:var(--green)}
+.method-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.method-text{background:var(--blue-light);color:var(--blue)}
+.method-ocr{background:var(--orange-light);color:var(--orange)}
+
+/* KPI */
+.kpi-note{font-size:11px;color:var(--grey);padding:10px 18px 0}
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px 18px}
+.kpi-card{background:var(--bg);border-radius:10px;padding:12px 14px;border:1px solid var(--border);border-left:3px solid transparent}
+.kpi-card.green{border-left-color:var(--green)}
+.kpi-card.red{border-left-color:var(--red)}
+.kpi-card.blue{border-left-color:var(--blue)}
+.kpi-label{font-size:11px;color:var(--grey);margin-bottom:3px}
+.kpi-value{font-size:17px;font-weight:700}
+.kpi-value.green{color:var(--green)}
+.kpi-value.red{color:var(--red)}
+.kpi-value.blue{color:var(--blue)}
+
+/* Fuliza */
+.fuliza-panel{margin:0 18px 14px;padding:12px 14px;background:var(--orange-light);border:1px solid #FFCC80;border-radius:10px;border-left:4px solid var(--orange)}
+.fuliza-title{font-size:11px;font-weight:700;color:var(--orange);letter-spacing:.04em;margin-bottom:8px}
+.fuliza-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fuliza-label{font-size:10px;color:var(--grey);margin-bottom:2px}
+.fuliza-value{font-size:14px;font-weight:700}
+
+/* Download */
+.download-wrap{padding:14px 18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.btn-dl-raw{padding:10px 14px;background:var(--white);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink);width:100%;text-align:left;transition:all .2s}
+.btn-dl-raw:hover{border-color:var(--green);color:var(--green);background:var(--green-light)}
+.btn-dl-formatted{padding:10px 14px;background:var(--green);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:white;width:100%;text-align:left;transition:background .2s}
+.btn-dl-formatted:hover{background:var(--green-dark)}
+.btn-dl-formatted:disabled{background:#9CA3AF;cursor:not-allowed}
+.btn-reset{padding:8px;background:transparent;color:var(--grey);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;width:100%}
+.btn-reset:hover{background:var(--bg)}
+.error-box{padding:12px 14px;background:var(--red-light);border:1px solid #FFCDD2;border-radius:8px;font-size:13px;color:var(--red)}
+.filter-bar{background:var(--blue-light);border:1px solid #90CAF9;border-radius:8px;padding:8px 12px;margin:0 18px 10px;font-size:12px;color:var(--blue)}
+
+/* Table */
+.txn-wrap{padding:0 18px 14px;overflow-x:auto}
+table.preview{width:100%;border-collapse:collapse;font-size:11px}
+table.preview th{background:var(--green);color:white;padding:6px 8px;text-align:left;font-weight:500}
+table.preview td{padding:5px 8px;border-bottom:1px solid #F9FAFB;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+table.preview tr:nth-child(even) td{background:var(--bg)}
+.amt-in{color:var(--green);font-weight:600}
+.amt-out{color:var(--red);font-weight:600}
+
+/* PAYWALL MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:white;border-radius:16px;max-width:460px;width:100%;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.modal-head{background:var(--green);padding:22px;text-align:center}
+.modal-head-title{font-size:17px;font-weight:700;color:white;margin-bottom:3px}
+.modal-head-sub{font-size:12px;color:rgba(255,255,255,.8)}
+.modal-body{padding:22px}
+.modal-used{background:var(--amber);border:1px solid var(--amber-border);border-radius:8px;padding:10px 12px;font-size:12px;color:#5D4037;margin-bottom:18px;text-align:center}
+.modal-opts{display:flex;flex-direction:column;gap:9px;margin-bottom:18px}
+.modal-opt{border:2px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px}
+.modal-opt:hover,.modal-opt.sel{border-color:var(--green);background:var(--green-light)}
+.opt-radio{width:17px;height:17px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-opt.sel .opt-radio{border-color:var(--green);background:var(--green)}
+.modal-opt.sel .opt-radio::after{content:'';width:5px;height:5px;background:white;border-radius:50%}
+.opt-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.opt-price{font-size:16px;font-weight:700;color:var(--green)}
+.opt-desc{font-size:11px;color:var(--grey);margin-top:1px}
+.phone-row{display:flex;gap:8px;margin-bottom:14px}
+.phone-prefix{padding:9px 11px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--grey);white-space:nowrap}
+.phone-input{flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--ink);min-width:0}
+.phone-input:focus{outline:none;border-color:var(--green)}
+.btn-pay{width:100%;padding:12px;background:var(--green);color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-pay:hover{background:var(--green-dark)}
+.modal-note{font-size:11px;color:var(--grey);text-align:center;margin-top:8px;line-height:1.6}
+.btn-modal-close{width:100%;padding:8px;background:transparent;color:var(--grey);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;margin-top:8px}
+.stk-wrap{text-align:center;padding:14px 0}
+.stk-icon{font-size:40px;margin-bottom:10px}
+.stk-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.stk-sub{font-size:12px;color:var(--grey);line-height:1.7}
+
+footer{text-align:center;font-size:11px;color:#9CA3AF;padding:2rem 1rem}
 </style>
 </head>
 <body>
-<div class="app">
-  <span class="badge">Cheche</span>
-  <h1>M-Pesa Statement Converter <span class="version-badge">v4.0</span></h1>
-  <p class="tagline">Upload your M-Pesa PDF — 6 Excel sheets, charts, payee analysis &amp; monthly trends</p>
 
-  <div id="upload-section">
-    <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-      <div class="upload-icon">📄</div>
-      <div class="upload-title">Drop your M-Pesa PDF statement here</div>
-      <div class="upload-sub">or click to browse · PDF files only · password-protected supported</div>
+<nav>
+  <a class="nav-logo" href="https://chechetech.co.ke">
+    <div class="nav-mark">C</div>
+    <span class="nav-name">Cheche Technologies</span>
+    <span class="nav-badge">v4.0</span>
+  </a>
+  <span class="nav-sub">M-Pesa Statement Converter</span>
+</nav>
+
+<div class="page">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📄 Upload M-Pesa Statement</div>
+        <div class="card-sub">PDF only · password-protected supported</div>
+      </div>
+      <div class="card-body">
+        <label for="file-input" class="upload-zone" id="drop-zone">
+          <div class="upload-icon">📄</div>
+          <div class="upload-title">Drop your M-Pesa PDF here</div>
+          <div class="upload-sub">or click to browse</div>
+        </label>
+        <input type="file" id="file-input" accept=".pdf" style="display:none"/>
+        <div id="file-info" style="display:none" class="file-chip">
+          <span>📋</span>
+          <span class="file-chip-name" id="file-name-label"></span>
+          <span class="file-chip-size" id="file-size-label"></span>
+          <button onclick="clearFile()" class="btn-clear">✕ Clear</button>
+        </div>
+        <div id="file-size-warning" style="display:none" class="size-warning">
+          ⏱ <strong>Large file detected.</strong> Processing may take <span id="est-time">20–40</span> seconds. Keep this tab open.
+        </div>
+      </div>
     </div>
-    <input type="file" id="file-input" accept=".pdf"/>
 
-    <div id="file-info" style="display:none" class="file-selected">
-      <span style="font-size:20px">📋</span>
-      <span class="file-name" id="file-name-label"></span>
-      <span class="file-size" id="file-size-label"></span>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🔒 Statement Password</div></div>
+      <div class="card-body">
+        <div class="pw-hint">Safaricom sends a <strong>6-digit code via SMS</strong> when you request your statement. Leave blank if already unlocked.</div>
+        <div class="input-row">
+          <input type="password" class="text-input" id="pw-input" placeholder="6-digit SMS code..." maxlength="6" inputmode="numeric"/>
+          <button class="btn-toggle" onclick="togglePw()" id="toggle-btn">Show</button>
+        </div>
+        <div class="pw-tip">💡 Check your SMS inbox for the 6-digit code.</div>
+        <div class="wrong-pw" id="wrong-pw">❌ Wrong password — check the SMS code.</div>
+      </div>
     </div>
 
-    <div class="password-section">
-      <div class="password-title">🔒 Statement Password</div>
-      <div class="password-hint">
-        Safaricom sends a <strong>6-digit code via SMS</strong> when you request your statement. That is your password.<br>
-        Leave blank if already unlocked.
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🔍 Filter Transactions <span style="font-weight:400;color:var(--grey);font-size:11px">(optional)</span></div>
       </div>
-      <div class="password-row">
-        <input type="password" class="password-input" id="pw-input" placeholder="Enter the 6-digit SMS code..." maxlength="6" inputmode="numeric"/>
-        <button class="toggle-pw" onclick="togglePw()" id="toggle-btn">Show</button>
+      <div class="card-body">
+        <div class="pw-hint">Type a name, business, or keyword. Separate multiple with a comma.</div>
+        <div class="input-row">
+          <input type="text" class="text-input" id="filter-input"
+                 placeholder="e.g. Adam Kamau, Family Bank, KPLC..."
+                 onkeydown="handleFilterKey(event)"/>
+          <button class="btn-toggle" onclick="clearAllFilters()">✕</button>
+        </div>
+        <div class="filter-tags" id="filter-tags"></div>
+        <div class="filter-info" id="filter-info">Press Enter or comma to add · Leave empty to export all</div>
       </div>
-      <div class="pw-tip">💡 Check your SMS inbox for the 6-digit code Safaricom sent when you requested this statement.</div>
-      <div class="wrong-pw" id="wrong-pw">❌ Wrong password. Please check the 6-digit code from your SMS.</div>
-    </div>
-
-    <!-- ── FILTER SECTION ── -->
-    <div class="filter-section">
-      <div class="filter-title">🔍 Filter Transactions <span style="font-weight:400;color:#888;font-size:12px">(optional)</span></div>
-      <div class="filter-hint">
-        Type a name, business, or keyword to extract only matching transactions.<br>
-        Separate multiple filters with a comma — any match is returned.
-      </div>
-      <div class="filter-input-row">
-        <input type="text" class="filter-input" id="filter-input"
-               placeholder="e.g. Fredrick Wambua, Family Bank, KPLC, ATL..."
-               onkeydown="handleFilterKey(event)"/>
-        <button class="filter-clear" onclick="clearAllFilters()" title="Clear all filters">✕ Clear</button>
-      </div>
-      <div class="filter-tags" id="filter-tags"></div>
-      <div class="filter-info" id="filter-info">Press Enter or comma to add a filter · Leave empty to export all transactions</div>
     </div>
 
     <div class="security-note">
-      🔐 <span>Your statement and password are processed entirely in your browser. Nothing is uploaded to any server.</span>
+      🔐 <span>PDF extraction runs in your browser. Formatting is sent securely over HTTPS to our servers and immediately discarded — never stored.</span>
     </div>
 
-    <div class="divider"></div>
     <button class="btn-process" id="btn-process" onclick="processFile()">⚡ Convert to Excel</button>
+
+    <div id="progress-section" class="card" style="display:none">
+      <div class="progress-wrap">
+        <div class="prog-label">
+          <span id="progress-text">Starting...</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="prog-bg"><div class="prog-fill" id="progress-fill" style="width:0%"></div></div>
+        <div class="steps">
+          <div class="step" id="step-1"><div class="step-dot">1</div>Unlocking PDF</div>
+          <div class="step" id="step-2"><div class="step-dot">2</div>Detecting text layer</div>
+          <div class="step" id="step-3"><div class="step-dot">3</div>Extracting all transactions</div>
+          <div class="step" id="step-4"><div class="step-dot">4</div>Applying filters &amp; building Excel</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">What makes this different</div></div>
+      <div class="card-body">
+        <div class="diff-grid">
+          <div class="diff-item"><div class="diff-icon">🔓</div><div class="diff-label">Unlocks password-protected PDFs</div></div>
+          <div class="diff-item"><div class="diff-icon">📝</div><div class="diff-label">Direct text extraction — 100% accurate</div></div>
+          <div class="diff-item"><div class="diff-icon">🔍</div><div class="diff-label">Filter by name, business or keyword</div></div>
+          <div class="diff-item"><div class="diff-icon">📊</div><div class="diff-label">Full details &amp; amounts every row</div></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <div id="progress-section" class="progress-section" style="display:none">
-    <div class="progress-label">
-      <span id="progress-text">Starting...</span>
-      <span id="progress-pct">0%</span>
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="right-empty" id="right-empty">
+      <div class="empty-icon">📊</div>
+      <div class="empty-title">Your results will appear here</div>
+      <div class="empty-sub">Upload a PDF and click Convert to Excel</div>
     </div>
-    <div class="progress-bar-bg">
-      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
-    </div>
-    <div class="steps">
-      <div class="step" id="step-1"><div class="step-dot">1</div> Unlocking PDF</div>
-      <div class="step" id="step-2"><div class="step-dot">2</div> Detecting text layer</div>
-      <div class="step" id="step-3"><div class="step-dot">3</div> Extracting all transactions</div>
-      <div class="step" id="step-4"><div class="step-dot">4</div> Applying filters &amp; building Excel</div>
-    </div>
+
+    <div id="error-section" style="display:none"></div>
+    <div id="results-section" style="display:none"></div>
+
   </div>
 
-  <div id="error-section" style="display:none"></div>
-  <div id="results-section" style="display:none"></div>
+</div>
+
+<!-- PAYWALL MODAL -->
+<div id="paywall-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closePaywall()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title">🔒 Free conversion used</div>
+      <div class="modal-head-sub">Choose how you'd like to continue</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-used">✅ Your free conversion included the full formatted Excel &amp; Dashboard. Ready for more?</div>
+      <div class="modal-opts">
+        <div class="modal-opt sel" id="opt-payg" onclick="selectPlan('payg')">
+          <div class="opt-radio"></div>
+          <div>
+            <div class="opt-title">Pay As You Go</div>
+            <div class="opt-price">KES 99 <span style="font-size:11px;font-weight:400;color:var(--grey)">per conversion</span></div>
+            <div class="opt-desc">No account needed · M-Pesa STK Push</div>
+          </div>
+        </div>
+        <div class="modal-opt" id="opt-pro" onclick="selectPlan('pro')">
+          <div class="opt-radio"></div>
+          <div>
+            <div class="opt-title">Pro — 30 conversions/month</div>
+            <div class="opt-price">KES 799 <span style="font-size:11px;font-weight:400;color:var(--grey)">/month</span></div>
+            <div class="opt-desc">Best for accountants &amp; bookkeepers</div>
+          </div>
+        </div>
+        <div class="modal-opt" id="opt-business" onclick="selectPlan('business')">
+          <div class="opt-radio"></div>
+          <div>
+            <div class="opt-title">Business — Unlimited</div>
+            <div class="opt-price">KES 2,499 <span style="font-size:11px;font-weight:400;color:var(--grey)">/month</span></div>
+            <div class="opt-desc">For firms &amp; teams · API access · 5 users</div>
+          </div>
+        </div>
+      </div>
+      <div id="phone-section">
+        <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:6px">Your M-Pesa Number</div>
+        <div class="phone-row">
+          <div class="phone-prefix">🇰🇪 +254</div>
+          <input type="tel" class="phone-input" id="paywall-phone" placeholder="7XX XXX XXX" maxlength="9" inputmode="numeric"/>
+        </div>
+        <button class="btn-pay" id="btn-pay" onclick="initiatePayment()">📲 Pay KES 99 via M-Pesa</button>
+        <div class="modal-note">A payment prompt will appear on your phone.<br>Enter your M-Pesa PIN — conversion starts automatically once confirmed.</div>
+      </div>
+      <div id="stk-status" style="display:none" class="stk-wrap">
+        <div class="stk-icon">📲</div>
+        <div class="stk-title">Check your phone</div>
+        <div class="stk-sub">An M-Pesa prompt has been sent to <strong id="stk-number"></strong>.<br>Enter your PIN to confirm.<br><br>This page updates automatically once payment is received.</div>
+      </div>
+      <button class="btn-modal-close" onclick="closePaywall()">✕ Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div id="dashboard-capture" style="display:none;position:fixed;left:-9999px;top:0;width:900px;background:white;padding:24px;font-family:Arial,sans-serif"></div>
 
-  <div class="how-section">
-    <div class="how-title">What makes this different</div>
-    <div class="how-steps">
-      <div class="how-step"><div class="how-step-icon">🔓</div><div class="how-step-label">Unlocks password-protected PDFs</div></div>
-      <div class="how-step"><div class="how-step-icon">📝</div><div class="how-step-label">Direct text extraction — 100% accurate</div></div>
-      <div class="how-step"><div class="how-step-icon">🔍</div><div class="how-step-label">Filter by name, business or keyword</div></div>
-      <div class="how-step"><div class="how-step-icon">📊</div><div class="how-step-label">Full details & amounts every row</div></div>
-    </div>
-  </div>
-  <div class="footer">Built by Cheche Technologies · © 2026 · Your data never leaves your device</div>
-</div>
+<footer>Built by Cheche Technologies · © 2026 · PDF extraction is local · Formatting is server-side, never stored · <a href="https://chechetech.co.ke" style="color:inherit">chechetech.co.ke</a></footer>
 
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -290,7 +462,15 @@ function handleFile(file){
   document.getElementById('file-info').style.display='flex';
   document.getElementById('error-section').style.display='none';
   document.getElementById('results-section').style.display='none';
+  document.getElementById('right-empty').style.display='block';
   document.getElementById('wrong-pw').style.display='none';
+  const mb=file.size/(1024*1024);
+  const warn=document.getElementById('file-size-warning');
+  const est=document.getElementById('est-time');
+  if(mb>1.5){
+    est.textContent=mb>3.5?'30–60 seconds':mb>2?'20–40 seconds':'10–20 seconds';
+    warn.style.display='block';
+  } else { warn.style.display='none'; }
 }
 
 function togglePw(){
@@ -528,6 +708,11 @@ function buildExcel(transactions, method, filterTerms){
   const totalIn  = transactions.reduce((s,t)=>s+(t.paid_in||0),0);
   const totalOut = transactions.reduce((s,t)=>s+(t.withdrawn||0),0);
   const net = totalIn + totalOut;
+  const fulizaAwarded   = transactions.reduce((s,t)=>s+(categorise(t.details,t.paid_in,t.withdrawn)==='Fuliza / Overdraft Credit'?(t.paid_in||0):0),0);
+  const fulizaRecovered = transactions.reduce((s,t)=>{const cat=categorise(t.details,t.paid_in,t.withdrawn);return s+(cat==='__EXCLUDE__ Loan Repayment'?Math.abs(t.withdrawn||0):0);},0);
+  const fulizaNetCost   = fulizaAwarded - fulizaRecovered;
+  const cleanIn         = totalIn  - fulizaAwarded;
+  const cleanOut        = Math.abs(totalOut) - fulizaRecovered;
 
   // Helper: is this an analysis-excluded transaction?
   const isExcluded = (t) => {
@@ -696,7 +881,7 @@ function buildExcel(transactions, method, filterTerms){
   ['A1','B1','C1','D1','E1','F1'].forEach(cell=>{ if(ws6[cell]) ws6[cell].s=headerStyle; });
   XLSX.utils.book_append_sheet(wb,ws6,'Monthly Summary');
 
-  return{wb,totalIn,totalOut,net,count:transactions.length,catList,payeeList,monthList};
+  return{wb,totalIn,totalOut,net,cleanIn,cleanOut,fulizaAwarded,fulizaRecovered,fulizaNetCost,count:transactions.length,catList,payeeList,monthList};
 }
 
 
@@ -758,16 +943,16 @@ async function processFile(){
 
     setProgress(88,'Building Excel...');
     await new Promise(r=>setTimeout(r,300));
-    const{wb,totalIn,totalOut,net,count,catList,payeeList,monthList}=buildExcel(filtered,method,activeFilters);
+    const{wb,totalIn,totalOut,net,cleanIn,cleanOut,fulizaAwarded,fulizaRecovered,fulizaNetCost,count,catList,payeeList,monthList}=buildExcel(filtered,method,activeFilters);
     setProgress(100,'Done! ✓');
 
     extractedData={
       wb, allTransactions, filtered,
-      totalIn, totalOut, net, count,
+      totalIn, totalOut, net, cleanIn, cleanOut, fulizaAwarded, fulizaRecovered, fulizaNetCost, count,
       method, activeFilters,
       catList, payeeList, monthList
     };
-    showResults(filtered,allTransactions.length,totalIn,totalOut,net,count,method,activeFilters,catList,payeeList,monthList);
+    showResults(filtered,allTransactions.length,totalIn,totalOut,net,cleanIn,cleanOut,fulizaAwarded,fulizaRecovered,fulizaNetCost,count,method,activeFilters,catList,payeeList,monthList);
 
   }catch(err){
     document.getElementById('progress-section').style.display='none';
@@ -776,7 +961,7 @@ async function processFile(){
   }
 }
 
-function showResults(transactions,totalAll,totalIn,totalOut,net,count,method,activeFilters,catList,payeeList,monthList){
+function showResults(transactions,totalAll,totalIn,totalOut,net,cleanIn,cleanOut,fulizaAwarded,fulizaRecovered,fulizaNetCost,count,method,activeFilters,catList,payeeList,monthList){
   const absOut=Math.abs(totalOut);
   const fmt=n=>Math.abs(n).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
   const isText=method.includes('Direct');
@@ -877,42 +1062,59 @@ function showResults(transactions,totalAll,totalIn,totalOut,net,count,method,act
   }
 
   const downloadButtons=isFiltered
-    ?`<button class="btn-download-filtered" onclick="downloadExcel()">📥 Download Filtered Excel (${count} rows • 6 sheets)</button>
-      <button class="btn-download" onclick="downloadAll()" style="margin-bottom:8px">📥 Download All Transactions (${totalAll} rows)</button>`
-    :`<button class="btn-download" onclick="downloadExcel()">📥 Download Excel (${count} rows • 6 sheets)</button>`;
+    ?`<button class="btn-dl-raw" onclick="downloadExcel()">📥 Download Filtered Excel (${count} rows · 5 sheets)</button>
+      <button class="btn-dl-raw" onclick="downloadAll()">📥 Download All Transactions (${totalAll} rows)</button>
+      <button class="btn-dl-formatted" onclick="downloadFormatted()">✨ Download Formatted Excel (Dashboard &amp; Charts)</button>`
+    :`<button class="btn-dl-raw" onclick="downloadExcel()">📥 Download Raw Excel (${count} rows · 5 sheets)</button>
+      <button class="btn-dl-formatted" onclick="downloadFormatted()">✨ Download Formatted Excel (Dashboard &amp; Charts)</button>`;
 
+  document.getElementById('right-empty').style.display='none';
   document.getElementById('results-section').innerHTML=`
-    <div class="results-box">
-      <div class="results-title">✅ Done — ${count.toLocaleString()} transactions ${methodBadge}</div>
-      ${filterBar}
-      <div class="metrics-grid">
-        <div class="metric-card"><div class="metric-label">Total received</div><div class="metric-value green">KES ${fmt(totalIn)}</div></div>
-        <div class="metric-card"><div class="metric-label">Total paid out</div><div class="metric-value red">KES ${fmt(absOut)}</div></div>
-        <div class="metric-card"><div class="metric-label">Net cash flow</div><div class="metric-value ${net>=0?'green':'red'}">${net<0?'-':''}KES ${fmt(net)}</div></div>
-        <div class="metric-card"><div class="metric-label">${isFiltered?'Matched':'Total'} rows</div><div class="metric-value">${count.toLocaleString()}</div></div>
+    <div class="card">
+      <div class="results-header">
+        <span class="results-title">✅ Done — ${count.toLocaleString()} transactions</span>
+        ${methodBadge}
+      </div>
+      ${isFiltered?`<div class="filter-bar">🔍 Showing <strong>${count.toLocaleString()}</strong> of ${totalAll.toLocaleString()} matching: ${(activeFilters||[]).map(t=>'<strong>"'+t+'"</strong>').join(', ')}</div>`:''}
+      <div class="kpi-note">Actual cash flow — Fuliza excluded</div>
+      <div class="kpi-grid">
+        <div class="kpi-card green"><div class="kpi-label">Total Received</div><div class="kpi-value green">KES ${fmt(cleanIn)}</div></div>
+        <div class="kpi-card red"><div class="kpi-label">Total Withdrawn</div><div class="kpi-value red">KES ${fmt(cleanOut)}</div></div>
+        <div class="kpi-card ${(cleanIn-cleanOut)>=0?'green':'red'}"><div class="kpi-label">Net Cash Flow</div><div class="kpi-value ${(cleanIn-cleanOut)>=0?'green':'red'}">${(cleanIn-cleanOut)<0?'-':''}KES ${fmt(cleanIn-cleanOut)}</div></div>
+        <div class="kpi-card blue"><div class="kpi-label">${isFiltered?'Matched':'Total'} Rows</div><div class="kpi-value blue">${count.toLocaleString()}</div></div>
+      </div>
+      <div class="fuliza-panel">
+        <div class="fuliza-title">⚡ FULIZA / OVERDRAFT SUMMARY</div>
+        <div class="fuliza-grid">
+          <div><div class="fuliza-label">Fuliza Awarded</div><div class="fuliza-value" style="color:#F57C00">KES ${fmt(fulizaAwarded)}</div></div>
+          <div><div class="fuliza-label">Fuliza Recovered</div><div class="fuliza-value" style="color:var(--green)">KES ${fmt(fulizaRecovered)}</div></div>
+          <div><div class="fuliza-label">Net Fuliza Cost</div><div class="fuliza-value" style="color:${fulizaNetCost>0?'var(--red)':'var(--green)'}">KES ${fmt(fulizaNetCost)}</div></div>
+        </div>
       </div>
       ${pieHtml}
       ${barHtml}
       ${monthHtml}
-      <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Preview (first 5 transactions)</div>
-      <div style="overflow-x:auto;margin-bottom:1rem">
+      <div class="txn-wrap">
+        <div style="font-size:11px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Preview — first 5 transactions</div>
         <table class="preview">
           <thead><tr><th>Receipt</th><th>Date</th><th>Details</th><th>Amount</th></tr></thead>
           <tbody>${preview}</tbody>
         </table>
       </div>
-      <div style="font-size:11px;color:#888;background:#f8f9fa;border-radius:6px;padding:8px 12px;margin-bottom:1rem">
-        📊 Excel includes <strong>6 sheets:</strong> Transactions · Summary · Payee Analysis · Category Breakdown · Top Transactions · Monthly Summary
+      <div style="margin:0 18px 12px;padding:10px 12px;background:var(--green-light);border-radius:8px;font-size:11px;color:var(--green)">
+        📊 Excel includes <strong>5 sheets:</strong> All Transactions · Summary · Payee Analysis · Category Breakdown · Top Transactions · Monthly Summary
       </div>
-      ${downloadButtons}
-      <button class="btn-reset" onclick="resetApp()" style="margin-top:12px;padding:11px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;width:100%;font-size:14px;cursor:pointer;color:#333;font-weight:500;">✕ Clear &amp; Upload New Statement</button>
+      <div class="download-wrap">
+        ${downloadButtons}
+        <button class="btn-reset" onclick="resetApp()">↺ Convert another statement</button>
+      </div>
     </div>`;
   document.getElementById('results-section').style.display='block';
 }
 
 
 function buildDashboardHTML(data){
-  const {totalIn,totalOut,net,count,catList,payeeList,monthList,activeFilters} = data;
+  const {totalIn,totalOut,net,cleanIn,cleanOut,fulizaAwarded,fulizaRecovered,fulizaNetCost,count,catList,payeeList,monthList,activeFilters} = data;
   const fmt=n=>Math.abs(n).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
   const topCats=(catList||[]).filter(c=>c.totalOut>0&&!c.cat.includes('EXCLUDE')&&c.cat!=='Transaction Charges'&&c.cat!=='Loan Repayment').slice(0,6);
   const topPayees=(payeeList||[]).filter(p=>!p.payee.includes('Overdraw')&&!p.payee.includes('Fuliza')&&!p.payee.includes('Charge')).slice(0,8);
@@ -980,11 +1182,11 @@ function buildDashboardHTML(data){
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px;background:#f8f8f8;border:1px solid #e0e0e0;border-top:none">
       <div style="background:white;border-radius:8px;padding:14px;border-left:4px solid #007A3D;box-shadow:0 1px 4px rgba(0,0,0,.08)">
         <div style="font-size:11px;color:#888;margin-bottom:4px">Total Received</div>
-        <div style="font-size:18px;font-weight:700;color:#007A3D">KES ${fmt(totalIn)}</div>
+        <div style="font-size:18px;font-weight:700;color:#007A3D">KES ${fmt(cleanIn)}</div>
       </div>
       <div style="background:white;border-radius:8px;padding:14px;border-left:4px solid #C62828;box-shadow:0 1px 4px rgba(0,0,0,.08)">
         <div style="font-size:11px;color:#888;margin-bottom:4px">Total Paid Out</div>
-        <div style="font-size:18px;font-weight:700;color:#C62828">KES ${fmt(Math.abs(totalOut))}</div>
+        <div style="font-size:18px;font-weight:700;color:#C62828">KES ${fmt(cleanOut)}</div>
       </div>
       <div style="background:white;border-radius:8px;padding:14px;border-left:4px solid ${net>=0?'#007A3D':'#C62828'};box-shadow:0 1px 4px rgba(0,0,0,.08)">
         <div style="font-size:11px;color:#888;margin-bottom:4px">Net Cash Flow</div>
@@ -1028,86 +1230,69 @@ function buildDashboardHTML(data){
   </div>`;
 }
 
-async function downloadExcel(){
+function downloadExcel(){
+  if(!extractedData) return;
+  const wb = extractedData.wb;
+  const dashIdx = wb.SheetNames.indexOf('Dashboard');
+  if(dashIdx >= 0){ wb.SheetNames.splice(dashIdx,1); delete wb.Sheets['Dashboard']; }
+  const isFiltered = extractedData.activeFilters && extractedData.activeFilters.length > 0;
+  const suffix = isFiltered ? '_filtered' : '_all';
+  const name = (selectedFile ? selectedFile.name.replace('.pdf','') : 'mpesa_statement') + suffix + '_Cheche_raw.xlsx';
+  XLSX.writeFile(wb, name);
+}
+async function downloadFormatted(){
   if(!extractedData) return;
 
-  const btn = document.querySelector('.btn-download, .btn-download-filtered');
-  if(btn){ btn.textContent='⏳ Generating dashboard...'; btn.disabled=true; }
+  const btn = event.target;
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ Formatting... this may take up to 60 seconds for large statements';
+  btn.disabled = true;
 
   try{
-    // Build dashboard HTML in hidden div
-    const dash = document.getElementById('dashboard-capture');
-    dash.innerHTML = buildDashboardHTML(extractedData);
-    dash.style.display = 'block';
+    // Get raw Excel as base64
+    const rawWb = extractedData.wb;
+    const rawBytes = XLSX.write(rawWb, {type:'base64', bookType:'xlsx'});
+    const isFiltered = extractedData.activeFilters && extractedData.activeFilters.length > 0;
+    const suffix = isFiltered ? '_filtered' : '_all';
+    const filename = (selectedFile ? selectedFile.name.replace('.pdf','') : 'mpesa_statement') + suffix + '_Cheche.xlsx';
 
-    // Capture as image using html2canvas
-    await new Promise(r=>setTimeout(r,300)); // let DOM render
+    // Call Lambda formatter API
+    const response = await fetch('https://vtfoxobw6l.execute-api.us-east-1.amazonaws.com/prod/format', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        excel: rawBytes,
+        filename: filename
+      })
+    });
 
-    let imgData = null;
-    if(typeof html2canvas !== 'undefined'){
-      const canvas = await html2canvas(dash, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        width: 900,
-        logging: false
-      });
-      imgData = canvas.toDataURL('image/png').split(',')[1];
+    if(!response.ok){
+      const err = await response.text();
+      throw new Error('Formatter error: ' + err);
     }
 
-    dash.style.display = 'none';
-
-    // Add dashboard image as Sheet 1 if captured
-    if(imgData){
-      const wb = extractedData.wb;
-      // Create dashboard sheet at position 0
-      const wsDash = XLSX.utils.aoa_to_sheet([
-        ['Cheche Technologies — M-Pesa Statement Dashboard'],
-        ['See image below for visual analysis. Detailed data in subsequent sheets.'],
-        [''],
-      ]);
-      wsDash['!cols'] = [{wch:120}];
-      
-      // Add image to sheet (SheetJS Pro needed for full support)
-      // Use workaround: embed as drawing
-      if(!wb.Sheets['Dashboard']){
-        XLSX.utils.book_append_sheet(wb,'','Dashboard');
-      }
-      // Move dashboard to front by reordering
-      const sheetNames = wb.SheetNames;
-      const dashIdx = sheetNames.indexOf('Dashboard');
-      if(dashIdx > 0){
-        sheetNames.splice(dashIdx,1);
-        sheetNames.unshift('Dashboard');
-      }
-      wb.Sheets['Dashboard'] = wsDash;
-
-      // Store image data for Python post-processing note
-      extractedData.dashboardImg = imgData;
-    }
-
-    const isFiltered=extractedData.activeFilters&&extractedData.activeFilters.length>0;
-    const suffix=isFiltered?'_filtered':'_all';
-    const name=(selectedFile?selectedFile.name.replace('.pdf',''):'mpesa_statement')+suffix+'_Cheche.xlsx';
-    XLSX.writeFile(extractedData.wb, name);
+    const result = await response.json();
+    
+    // Download the formatted Excel
+    const formattedBytes = atob(result.excel);
+    const byteArray = new Uint8Array(formattedBytes.length);
+    for(let i=0; i<formattedBytes.length; i++) byteArray[i] = formattedBytes.charCodeAt(i);
+    const blob = new Blob([byteArray], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = result.filename || filename;
+    a.click();
+    URL.revokeObjectURL(url);
 
   } catch(err){
-    console.error('Dashboard capture error:', err);
-    // Fallback: just download without dashboard
-    const isFiltered=extractedData.activeFilters&&extractedData.activeFilters.length>0;
-    const suffix=isFiltered?'_filtered':'_all';
-    const name=(selectedFile?selectedFile.name.replace('.pdf',''):'mpesa_statement')+suffix+'_Cheche.xlsx';
-    XLSX.writeFile(extractedData.wb,name);
+    alert('Formatting failed: ' + err.message + '\n\nTry downloading the raw Excel instead.');
+    console.error(err);
   } finally {
-    if(btn){ btn.textContent=btn.textContent.replace('⏳ Generating dashboard...', btn.textContent.includes('Filtered')?'📥 Download Filtered Excel':'📥 Download Excel'); btn.disabled=false; }
-    // Restore button text
-    document.querySelectorAll('.btn-download,.btn-download-filtered').forEach(b=>{
-      if(b.textContent.includes('Generating')) b.textContent = b.textContent.replace('⏳ Generating dashboard...','📥 Download Excel');
-      b.disabled=false;
-    });
+    btn.textContent = originalText;
+    btn.disabled = false;
   }
 }
-
 function downloadAll(){
   if(!extractedData)return;
   // Rebuild excel with all transactions, no filter
@@ -1115,7 +1300,16 @@ function downloadAll(){
   const name=(selectedFile?selectedFile.name.replace('.pdf',''):'mpesa_statement')+'_all_Cheche.xlsx';
   XLSX.writeFile(wb,name);
 }
-
+function clearFile(){
+  selectedFile = null;
+  fileInput.value = '';
+  document.getElementById('file-info').style.display = 'none';
+  document.getElementById('file-size-warning').style.display = 'none';
+  document.getElementById('wrong-pw').style.display = 'none';
+  document.getElementById('error-section').style.display = 'none';
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('right-empty').style.display = 'block';
+}
 function resetApp(){
   selectedFile=null;extractedData=null;
   fileInput.value='';
@@ -1123,7 +1317,9 @@ function resetApp(){
   document.getElementById('pw-input').type='password';
   document.getElementById('toggle-btn').textContent='Show';
   document.getElementById('file-info').style.display='none';
+  document.getElementById('file-size-warning').style.display='none';
   document.getElementById('wrong-pw').style.display='none';
+  document.getElementById('right-empty').style.display='block';
   document.getElementById('progress-section').style.display='none';
   document.getElementById('results-section').style.display='none';
   document.getElementById('error-section').style.display='none';
@@ -1135,6 +1331,134 @@ function resetApp(){
   }
   setProgress(0,'');
 }
+
+// ── PAYWALL ──
+const CHECHE_KEY = 'cheche_free_used';
+const PLAN_AMOUNTS = {payg:99, pro:799, business:2499};
+const PLAN_LABELS  = {payg:'KES 99', pro:'KES 799/month', business:'KES 2,499/month'};
+const PAYMENT_API  = 'https://jkv6ay89l0.execute-api.us-east-1.amazonaws.com/prod';
+let _selectedPlan  = 'payg';
+let _pendingConvert = false;
+let _checkoutId    = null;
+let _pollInterval  = null;
+
+function _hasUsedFree(){ return false; /* PAYWALL DISABLED FOR TESTING */ }
+function _markUsed(){ try{ localStorage.setItem(CHECHE_KEY,'true'); }catch(e){} }
+
+function selectPlan(p){
+  _selectedPlan=p;
+  ['payg','pro','business'].forEach(x=>document.getElementById('opt-'+x).classList.toggle('sel',x===p));
+  document.getElementById('btn-pay').textContent='📲 Pay '+PLAN_LABELS[p]+' via M-Pesa';
+}
+
+function showPaywall(){
+  document.getElementById('paywall-modal').style.display='flex';
+  document.getElementById('phone-section').style.display='block';
+  document.getElementById('stk-status').style.display='none';
+  document.getElementById('paywall-phone').value='';
+  selectPlan('payg');
+}
+
+function closePaywall(){
+  document.getElementById('paywall-modal').style.display='none';
+  if(_pollInterval){ clearInterval(_pollInterval); _pollInterval=null; }
+  _pendingConvert=false;
+}
+
+function initiatePayment(){
+  const raw=document.getElementById('paywall-phone').value.replace(/\D/g,'');
+  if(raw.length!==9||!/^[71]/.test(raw)){ alert('Enter a valid Safaricom number e.g. 712345678'); return; }
+  const phone='254'+raw;
+  const plan=_selectedPlan;
+  const amount=PLAN_AMOUNTS[plan];
+
+  document.getElementById('phone-section').style.display='none';
+  document.getElementById('stk-status').style.display='block';
+  document.getElementById('stk-number').textContent='+254 '+raw;
+  const existingErr=document.getElementById('paywall-error');
+  if(existingErr) existingErr.remove();
+
+  fetch(PAYMENT_API+'/stkpush',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({phone,amount,plan})
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.success && data.checkout_request_id){
+      _checkoutId=data.checkout_request_id;
+      _pollInterval=setInterval(_pollPayment,3000);
+      // Auto-timeout after 35 seconds if no response
+      setTimeout(()=>{
+        if(_pollInterval){
+          clearInterval(_pollInterval); _pollInterval=null;
+          _showPaywallError('Payment timed out. Please try again.');
+        }
+      }, 35000);
+    } else {
+      _showPaywallError(data.error||'STK Push failed. Please try again.');
+    }
+  })
+  .catch(err=>{
+    _showPaywallError('Network error. Please check your connection and try again.');
+    console.error('[CHECHE] STK error:',err);
+  });
+}
+
+function _pollPayment(){
+  if(!_checkoutId) return;
+  fetch(PAYMENT_API+'/status?id='+encodeURIComponent(_checkoutId))
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.status==='PAID'){
+      clearInterval(_pollInterval); _pollInterval=null;
+      _onPaymentConfirmed();
+    } else if(data.status==='FAILED'){
+      clearInterval(_pollInterval); _pollInterval=null;
+      _showPaywallError('Payment was cancelled or failed. Please try again.');
+    }
+  })
+  .catch(err=>console.error('[CHECHE] Poll error:',err));
+}
+
+function _showPaywallError(msg){
+  document.getElementById('stk-status').style.display='none';
+  document.getElementById('phone-section').style.display='block';
+  // Remove any existing error
+  const existing = document.getElementById('paywall-error');
+  if(existing) existing.remove();
+  const e=document.createElement('div');
+  e.id='paywall-error';
+  e.style.cssText='padding:10px 12px;background:#FFF5F5;border:1px solid #FFCDD2;border-radius:8px;font-size:12px;color:#C62828;margin-bottom:12px;line-height:1.6';
+  e.innerHTML='❌ '+msg+'<br><span style="font-size:11px;color:#888">Enter your number again and try once more.</span>';
+  const ps=document.getElementById('phone-section');
+  ps.insertBefore(e,ps.firstChild);
+  // Clear phone input for retry
+  document.getElementById('paywall-phone').value='';
+}
+
+function _onPaymentConfirmed(){
+  closePaywall();
+  if(_pendingConvert && selectedFile){
+    _pendingConvert=false;
+    _runProcess();
+  }
+}
+
+// Intercept processFile
+const _runProcess = processFile;
+processFile = function(){
+  if(_hasUsedFree()){ _pendingConvert=true; showPaywall(); return; }
+  _runProcess();
+};
+
+// Mark used after first successful conversion
+const _baseShowResults = showResults;
+showResults = function(...a){
+  _markUsed();
+  _baseShowResults(...a);
+};
+
 </script>
 </body>
 </html>
