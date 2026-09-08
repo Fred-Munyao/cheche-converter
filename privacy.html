@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Cheche Technologies</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#F3F4F6;color:#111827;line-height:1.7}
+.wrap{max-width:760px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+nav{background:#fff;border-bottom:1px solid #E5E7EB;padding:0 2rem;height:56px;display:flex;align-items:center;gap:10px}
+.nav-mark{width:30px;height:30px;background:#007A3D;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px}
+.nav-name{font-weight:700;font-size:15px}
+h1{font-size:26px;font-weight:700;margin-bottom:6px;color:#007A3D}
+.updated{font-size:13px;color:#6B7280;margin-bottom:2rem}
+h2{font-size:17px;font-weight:700;margin:1.8rem 0 .6rem;color:#111827}
+p,li{font-size:14px;color:#374151}
+ul{margin:.4rem 0 .8rem 1.2rem}
+li{margin-bottom:.4rem}
+.callout{background:#E8F5E9;border:1px solid #C8E6C9;border-left:4px solid #007A3D;border-radius:8px;padding:14px 16px;margin:1.2rem 0;font-size:13px;color:#1B5E20}
+.callout strong{color:#007A3D}
+a{color:#007A3D;text-decoration:none}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #E5E7EB}
+th{background:#F3F4F6;font-weight:600}
+footer{text-align:center;font-size:11px;color:#9CA3AF;padding:2rem 1rem}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://chechetech.co.ke" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <div class="nav-mark">C</div>
+    <span class="nav-name" style="color:#111827">Cheche Technologies</span>
+  </a>
+</nav>
+
+<div class="wrap">
+  <h1>Privacy Policy</h1>
+  <div class="updated">Last updated: September 9, 2026</div>
+
+  <div class="callout">
+    <strong>The short version:</strong> Your M-Pesa PDF is read entirely in your browser and never uploaded anywhere. When you download your Excel workbook, your transaction data is sent securely to our server for formatting only, and is discarded immediately afterward. We do not store, sell, or share your financial data with anyone.
+  </div>
+
+  <h2>1. Who we are</h2>
+  <p>Cheche Technologies ("Cheche", "we", "us") operates the M-Pesa Statement Converter at chechetech.co.ke. We are based in Nairobi, Kenya. For any privacy questions, contact us at <a href="mailto:privacy@chechetech.co.ke">privacy@chechetech.co.ke</a>.</p>
+
+  <h2>2. What data we process</h2>
+  <p>When you use the converter, the following data may be processed:</p>
+  <ul>
+    <li><strong>M-Pesa statement contents</strong> — transaction dates, amounts, payee/payer names, receipt numbers, and statement password (if your PDF is locked).</li>
+    <li><strong>Phone number</strong> — only if you choose a paid plan (Pay As You Go, Pro, or Business), to send an M-Pesa payment prompt (STK Push).</li>
+    <li><strong>Usage data</strong> — an anonymous random identifier stored in your browser, the type of action taken (e.g. page visited, statement converted, workbook downloaded), device type (mobile/desktop), approximate file size, number of transactions and months in the statement, and how you arrived at the site. This tells us how the product is being used. It never includes the contents of your statement — no names, amounts, or balances.</li>
+  </ul>
+
+  <h2>3. How your data is processed</h2>
+  <table>
+    <tr><th>Step</th><th>Where it happens</th><th>What happens to your data</th></tr>
+    <tr><td>PDF unlocking &amp; extraction</td><td>Your browser (client-side)</td><td>Never leaves your device</td></tr>
+    <tr><td>Workbook assembly</td><td>Your browser (client-side)</td><td>Never leaves your device</td></tr>
+    <tr><td>Workbook formatting (Dashboard)</td><td>AWS server (Lambda)</td><td>Sent over encrypted HTTPS, processed, returned, then immediately discarded — not stored or logged</td></tr>
+    <tr><td>Payment (STK Push)</td><td>AWS server + Safaricom Daraja API</td><td>Phone number and payment amount sent to initiate M-Pesa payment. Successful payments are retained for reconciliation and accounting; pending or failed attempts are deleted automatically after 30 days</td></tr>
+    <tr><td>Usage analytics</td><td>AWS server</td><td>Anonymous identifier and event metadata stored for up to 18 months, then deleted automatically. No statement contents</td></tr>
+  </table>
+
+  <h2>4. What we never do</h2>
+  <ul>
+    <li>We do not store your M-Pesa statement, transaction history, or any extracted financial data on our servers.</li>
+    <li>We do not sell, rent, or share your data with advertisers or third parties.</li>
+    <li>We do not use your financial data to train any AI model.</li>
+    <li>We do not require an account, email, or personal details for the Free or Pay As You Go tiers.</li>
+  </ul>
+
+  <h2>5. Payment data</h2>
+  <p>When you initiate a payment via M-Pesa STK Push, we record your phone number, payment amount, plan, payment status (pending, paid, or failed), and M-Pesa receipt number where applicable. This is standard transaction record-keeping, similar to any business that accepts M-Pesa payments. We retain records of successful payments to reconcile our records with Safaricom, resolve payment disputes, and meet our own accounting and tax obligations. Records of attempts that failed or were cancelled are deleted automatically after 30 days. When you pay, your payment record also includes the anonymous usage identifier described in Section 2, so that we can understand how paying customers use the product. We do not store your M-Pesa PIN at any point — this is entered directly on your phone via Safaricom's own secure prompt and never passes through our systems.</p>
+
+  <h2>6. Your rights</h2>
+  <p>Under Kenya's Data Protection Act, 2019, you have the right to:</p>
+  <ul>
+    <li>Know what data we hold about you (in practice, this is minimal — see Section 4)</li>
+    <li>Request correction or deletion of any data we do hold</li>
+    <li>Object to processing of your data</li>
+    <li>Lodge a complaint with the Office of the Data Protection Commissioner (ODPC) if you believe your rights have been violated</li>
+  </ul>
+  <p>To exercise any of these rights, email <a href="mailto:privacy@chechetech.co.ke">privacy@chechetech.co.ke</a>.</p>
+
+  <h2>7. Security</h2>
+  <p>All data in transit is encrypted via HTTPS/TLS. Our payment infrastructure runs on AWS with industry-standard access controls. Because we do not retain your financial data after processing, the risk of a data breach affecting your information is minimised by design.</p>
+
+  <h2>8. Children's privacy</h2>
+  <p>Cheche is intended for use by adults managing their own or their business's financial records. We do not knowingly collect data from minors.</p>
+
+  <h2>9. Changes to this policy</h2>
+  <p>We may update this policy from time to time. The "Last updated" date at the top will reflect any changes. Continued use of the service after changes constitutes acceptance of the updated policy.</p>
+
+  <h2>10. Contact us</h2>
+  <p>Cheche Technologies<br>
+  Nairobi, Kenya<br>
+  Email: <a href="mailto:privacy@chechetech.co.ke">privacy@chechetech.co.ke</a><br>
+  Web: <a href="https://chechetech.co.ke">chechetech.co.ke</a></p>
+
+</div>
+
+<footer>Built by Cheche Technologies · © 2026 · <a href="https://chechetech.co.ke" style="color:inherit">chechetech.co.ke</a> · <a href="/terms.html" style="color:inherit">Terms of Service</a></footer>
+
+</body>
+</html>
