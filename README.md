@@ -1,41 +1,48 @@
 # Cheche M-Pesa Statement Converter
 
-A web-based tool that converts Safaricom M-Pesa PDF statements into clean, 
-filterable Excel files instantly — built for Kenyan individuals, accountants, 
-and financial institutions.
+Turns Safaricom M-Pesa PDF statements into clean, analysed Excel workbooks.
 
-## Features
+**Live:** [chechetech.co.ke](https://chechetech.co.ke)  ·  **Infrastructure:** [cheche-infrastructure](https://github.com/Fred-Munyao/cheche-infrastructure)
 
-- 🔓 Unlocks password-protected M-Pesa PDFs (6-digit SMS code)
-- 📝 Direct text extraction — 100% accurate on original Safaricom PDFs
-- 🧹 Removes Safaricom approval stamp before processing
-- ✂️ Preserves split charge + transfer rows correctly
-- 🔍 Filter by name, business, or keyword (comma-separated)
-- 📊 Full names and amounts on every row
-- 🔐 Everything processed in browser — your data never leaves your device
+## What it does
 
-## Live Demo
+- Extracts transactions from M-Pesa PDF statements, including password-protected files
+- Handles 10,000+ transactions (tested on a 2-year, 4.4 MB statement)
+- Produces an Excel workbook with transaction, summary, payee, category, top-transaction, and monthly sheets
+- Separates Fuliza (overdraft) from real cash flow across all sheets
+- Optional formatted export adds a dashboard sheet with charts
 
-**[Launch Converter](http://cheche-converter-app-dev.s3-website-us-east-1.amazonaws.com)**
+## Privacy by design
 
-## Tech Stack
+PDF parsing runs entirely in the browser with PDF.js. Statements are never uploaded for extraction. Only the extracted data is sent to the formatting service when a user requests the formatted export.
 
-- Vanilla HTML, CSS, JavaScript
-- PDF.js — PDF text extraction
-- SheetJS (XLSX) — Excel file generation
-- AWS S3 — static website hosting
-- AWS CloudFront — CDN (coming soon)
+## Architecture
 
-## Pricing
+```
+Browser (PDF.js extraction)
+   │
+   ▼
+CloudFront ──► S3 (static site)
+   │
+   ▼
+API Gateway ──► Lambda (Python 3.12, openpyxl) ──► Formatted Excel
+```
 
-| Plan | Price | Conversions |
-|---|---|---|
-| Free | KES 0 | 1 per month |
-| Pro | KES 199/month | 10 per month |
-| Business | KES 799/month | Unlimited |
+Payments use the M-Pesa Daraja STK Push API via API Gateway, Lambda, and DynamoDB (sandbox-tested; go-live pending Paybill approval).
 
-## Author
+All AWS resources are defined in Terraform in [cheche-infrastructure](https://github.com/Fred-Munyao/cheche-infrastructure).
 
-**Fredrick Munyao Wambua**
-AWS Certified Solutions Architect – Associate
-Founder, Cheche Technologies | chechetech.co.ke
+## Tech stack
+
+HTML, JavaScript, PDF.js · Python, openpyxl · AWS S3, CloudFront, API Gateway, Lambda, DynamoDB · Terraform
+
+## Roadmap
+
+- [ ] Daraja go-live after Paybill approval
+- [ ] Phone OTP sign-in (Amazon Cognito)
+- [ ] Usage tracking and free-tier enforcement
+- [ ] Containerised formatter (Docker/ECS)
+
+---
+
+Built by [Fredrick Wambua](https://github.com/Fred-Munyao) · Cheche Technologies · Nairobi
