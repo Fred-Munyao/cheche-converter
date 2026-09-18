@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-Pesa Statement Converter (Demo) — Cheche Technologies</title>
+<meta name="robots" content="noindex,nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#007A3D;--green-dark:#005C2E;--green-light:#E8F5E9;--green-mid:#C8E6C9;
+  --red:#C62828;--red-light:#FFF5F5;
+  --blue:#1565C0;--blue-light:#E3F2FD;
+  --orange:#E65100;--orange-light:#FFF3E0;
+  --ink:#111827;--grey:#6B7280;--border:#E5E7EB;--bg:#F3F4F6;--white:#FFFFFF;
+  --amber:#FFF8E1;--amber-border:#FFE082;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);min-height:100vh;color:var(--ink)}
+
+/* NAV */
+nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-mark{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:15px}
+.nav-name{font-weight:700;font-size:15px;color:var(--ink)}
+.nav-badge{font-size:10px;font-weight:600;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:99px}
+.nav-sub{font-size:12px;color:var(--grey)}
+
+/* LAYOUT */
+.page{max-width:1200px;margin:0 auto;padding:1.5rem;display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start;min-width:0}
+@media(max-width:800px){.page{grid-template-columns:1fr}}
+
+/* LEFT PANEL */
+.left-panel{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);overflow:hidden;min-width:0}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border)}
+.card-title{font-size:13px;font-weight:600;color:var(--ink)}
+.card-sub{font-size:11px;color:var(--grey);margin-top:2px}
+.card-body{padding:14px 18px}
+
+/* Upload */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:1.5rem 1rem;text-align:center;cursor:pointer;background:var(--bg);transition:all .2s;display:block}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--green);background:var(--green-light)}
+.upload-icon{font-size:28px;margin-bottom:6px}
+.upload-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:2px}
+.upload-sub{font-size:11px;color:var(--grey)}
+.file-chip{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--green-light);border-radius:8px;border:1px solid var(--green-mid);margin-top:10px;min-width:0}
+.file-chip-name{font-size:11px;font-weight:500;color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.file-chip-size{font-size:11px;color:var(--grey);white-space:nowrap;flex-shrink:0}
+.btn-clear{padding:3px 8px;background:var(--red-light);border:1px solid #FFCDD2;border-radius:5px;color:var(--red);font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap;flex-shrink:0}
+.size-warning{margin-top:8px;padding:8px 12px;background:var(--amber);border:1px solid var(--amber-border);border-radius:8px;font-size:11px;color:#5D4037;line-height:1.6}
+
+/* Password */
+.pw-hint{font-size:12px;color:var(--grey);margin-bottom:8px;line-height:1.6}
+.input-row{display:flex;gap:8px}
+.text-input{flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--ink);min-width:0}
+.text-input:focus{outline:none;border-color:var(--green)}
+.btn-toggle{padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:12px;color:var(--grey);font-family:inherit;white-space:nowrap;flex-shrink:0}
+.pw-tip{font-size:11px;color:var(--grey);margin-top:6px}
+.wrong-pw{display:none;margin-top:8px;padding:8px 12px;background:var(--orange-light);border:1px solid #FFCC80;border-radius:7px;font-size:12px;color:var(--orange)}
+
+/* Filter */
+.filter-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.filter-tag{display:flex;align-items:center;gap:4px;background:var(--green-light);border:1px solid var(--green-mid);border-radius:99px;padding:2px 8px;font-size:11px;color:var(--green);font-weight:500}
+.filter-tag .rm{cursor:pointer;color:var(--grey)}
+.filter-info{font-size:11px;color:var(--grey);margin-top:5px}
+
+/* Security */
+.security-note{display:flex;gap:8px;align-items:flex-start;padding:10px 14px;background:#F0FDF4;border-radius:8px;border:1px solid var(--green-mid);font-size:11px;color:#166534;line-height:1.5}
+
+/* Process */
+.btn-process{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:9px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}
+.btn-process:hover{background:var(--green-dark)}
+.btn-process:disabled{background:#9CA3AF;cursor:not-allowed}
+
+/* Progress */
+.progress-wrap{padding:14px 18px}
+.prog-label{font-size:12px;color:var(--grey);margin-bottom:5px;display:flex;justify-content:space-between}
+.prog-bg{background:var(--border);border-radius:99px;height:6px;overflow:hidden;margin-bottom:12px}
+.prog-fill{height:100%;background:var(--green);border-radius:99px;transition:width .4s ease}
+.steps{display:flex;flex-direction:column;gap:7px}
+.step{display:flex;align-items:center;gap:8px;font-size:12px;color:#9CA3AF}
+.step.done{color:var(--green);font-weight:500}
+.step.active{color:var(--ink);font-weight:500}
+.step-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.step.done .step-dot{background:var(--green);border-color:var(--green);color:white}
+.step.active .step-dot{border-color:var(--green);color:var(--green)}
+
+/* Diff grid */
+.diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.diff-item{display:flex;align-items:flex-start;gap:8px}
+.diff-icon{width:28px;height:28px;background:var(--green-light);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.diff-label{font-size:11px;color:var(--grey);line-height:1.5;padding-top:3px}
+
+/* RIGHT PANEL */
+.right-panel{display:flex;flex-direction:column;gap:16px;min-width:0}
+.right-empty{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:3rem 2rem;text-align:center}
+.empty-icon{font-size:44px;opacity:.25;margin-bottom:10px}
+.empty-title{font-size:14px;font-weight:600;color:var(--grey);margin-bottom:4px}
+.empty-sub{font-size:12px;color:#9CA3AF}
+
+/* Results card */
+.results-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.results-title{font-size:14px;font-weight:600;color:var(--green)}
+.method-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.method-text{background:var(--blue-light);color:var(--blue)}
+.method-ocr{background:var(--orange-light);color:var(--orange)}
+
+/* KPI */
+.kpi-note{font-size:11px;color:var(--grey);padding:10px 18px 0}
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px 18px}
+.kpi-card{background:var(--bg);border-radius:10px;padding:12px 14px;border:1px solid var(--border);border-left:3px solid transparent}
+.kpi-card.green{border-left-color:var(--green)}
+.kpi-card.red{border-left-color:var(--red)}
+.kpi-card.blue{border-left-color:var(--blue)}
+.kpi-label{font-size:11px;color:var(--grey);margin-bottom:3px}
+.kpi-value{font-size:17px;font-weight:700}
+.kpi-value.green{color:var(--green)}
+.kpi-value.red{color:var(--red)}
+.kpi-value.blue{color:var(--blue)}
+
+/* Fuliza */
+.fuliza-panel{margin:0 18px 14px;padding:12px 14px;background:var(--orange-light);border:1px solid #FFCC80;border-radius:10px;border-left:4px solid var(--orange)}
+.fuliza-title{font-size:11px;font-weight:700;color:var(--orange);letter-spacing:.04em;margin-bottom:8px}
+.fuliza-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fuliza-label{font-size:10px;color:var(--grey);margin-bottom:2px}
+.fuliza-value{font-size:14px;font-weight:700}
+
+/* Download */
+.download-wrap{padding:14px 18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.btn-dl-formatted{padding:10px 14px;background:var(--green);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:white;width:100%;text-align:left;transition:background .2s}
+.btn-dl-formatted:hover{background:var(--green-dark)}
+.btn-dl-formatted:disabled{background:#9CA3AF;cursor:not-allowed}
+.dl-error{padding:10px 12px;background:var(--red-light);border:1px solid #FFCDD2;border-radius:8px;font-size:12px;color:var(--red);line-height:1.6}
+.modal-opt.soon{opacity:.55;cursor:default;pointer-events:none}
+.soon-tag{display:inline-block;font-size:10px;font-weight:700;background:var(--green-light);color:var(--green);padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.btn-reset{padding:8px;background:transparent;color:var(--grey);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;width:100%}
+.btn-reset:hover{background:var(--bg)}
+.error-box{padding:12px 14px;background:var(--red-light);border:1px solid #FFCDD2;border-radius:8px;font-size:13px;color:var(--red)}
+.filter-bar{background:var(--blue-light);border:1px solid #90CAF9;border-radius:8px;padding:8px 12px;margin:0 18px 10px;font-size:12px;color:var(--blue)}
+
+/* Table */
+.txn-wrap{padding:0 18px 14px;overflow-x:auto}
+table.preview{width:100%;border-collapse:collapse;font-size:11px}
+table.preview th{background:var(--green);color:white;padding:6px 8px;text-align:left;font-weight:500}
+table.preview td{padding:5px 8px;border-bottom:1px solid #F9FAFB;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+table.preview tr:nth-child(even) td{background:var(--bg)}
+.amt-in{color:var(--green);font-weight:600}
+.amt-out{color:var(--red);font-weight:600}
+
+/* PAYWALL MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:white;border-radius:16px;max-width:460px;width:100%;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.modal-head{background:var(--green);padding:22px;text-align:center}
+.modal-head-title{font-size:17px;font-weight:700;color:white;margin-bottom:3px}
+.modal-head-sub{font-size:12px;color:rgba(255,255,255,.8)}
+.modal-body{padding:22px}
+.modal-used{background:var(--amber);border:1px solid var(--amber-border);border-radius:8px;padding:10px 12px;font-size:12px;color:#5D4037;margin-bottom:18px;text-align:center}
+.modal-opts{display:flex;flex-direction:column;gap:9px;margin-bottom:18px}
+.modal-opt{border:2px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px}
+.modal-opt:hover,.modal-opt.sel{border-color:var(--green);background:var(--green-light)}
+.opt-radio{width:17px;height:17px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-opt.sel .opt-radio{border-color:var(--green);background:var(--green)}
+.modal-opt.sel .opt-radio::after{content:'';width:5px;height:5px;background:white;border-radius:50%}
+.opt-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.opt-price{font-size:16px;font-weight:700;color:var(--green)}
+.opt-desc{font-size:11px;color:var(--grey);margin-top:1px}
+.phone-row{display:flex;gap:8px;margin-bottom:14px}
+.phone-prefix{padding:9px 11px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--grey);white-space:nowrap}
+.phone-input{flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--ink);min-width:0}
+.phone-input:focus{outline:none;border-color:var(--green)}
+.btn-pay{width:100%;padding:12px;background:var(--green);color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-pay:hover{background:var(--green-dark)}
+.modal-note{font-size:11px;color:var(--grey);text-align:center;margin-top:8px;line-height:1.6}
+.btn-modal-close{width:100%;padding:8px;background:transparent;color:var(--grey);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;margin-top:8px}
+.stk-wrap{text-align:center;padding:14px 0}
+.stk-icon{font-size:40px;margin-bottom:10px}
+.stk-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.stk-sub{font-size:12px;color:var(--grey);line-height:1.7}
+
+footer{text-align:center;font-size:11px;color:#9CA3AF;padding:2rem 1rem}
+/* ── Free-dashboard teaser locks ── */
+.locked-wrap{position:relative;border-radius:8px;overflow:hidden;margin-top:8px}
+.locked-blur{filter:blur(5px) saturate(65%);opacity:.6;pointer-events:none;user-select:none}
+.locked-cta{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.92) 60%);text-align:center;padding:10px}
+.locked-cta-text{font-size:12px;color:#333;font-weight:600;max-width:250px;line-height:1.4}
+.locked-cta-btn{font-size:11px;font-weight:700;color:#fff;background:var(--green);padding:7px 16px;border-radius:99px;border:none;cursor:pointer;white-space:nowrap}
+.locked-cta-btn:hover{opacity:.9}
+.stat-highlight{background:#F8FAFC;border:1px solid #E5E7EB;border-radius:8px;padding:10px 12px;margin-bottom:2px}
+.stat-highlight .sh-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+.stat-highlight .sh-val{font-size:13px;font-weight:700;margin-top:2px}
+.stat-highlight .sh-sub{font-size:11px;color:#666;margin-top:1px}
+
+/* ── DEMO MODE ── */
+.demo-bar{background:var(--amber);border-bottom:1px solid var(--amber-border);padding:7px 2rem;font-size:12px;color:#7a5c00;display:flex;align-items:center;gap:8px;justify-content:center;text-align:center}
+.demo-bar strong{color:#5c4400}
+.nav-badge.demo{background:var(--amber);color:#7a5c00}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="https://chechetech.co.ke">
+    <div class="nav-mark">C</div>
+    <span class="nav-name">Cheche Technologies</span>
+    <span class="nav-badge">v4.0</span>
+    <span class="nav-badge demo">DEMO</span>
+  </a>
+  <span class="nav-sub">M-Pesa Statement Converter</span>
+</nav>
+
+<div class="demo-bar">
+  🎬 <span><strong>Demo build.</strong> Counterparty names, phone numbers and receipt codes are randomised in your browser before anything is displayed. The workbook download is unlocked and free — no payment is sent.</span>
+</div>
+
+<div class="page">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📄 Upload M-Pesa Statement</div>
+        <div class="card-sub">PDF only · password-protected supported</div>
+      </div>
+      <div class="card-body">
+        <label for="file-input" class="upload-zone" id="drop-zone">
+          <div class="upload-icon">📄</div>
+          <div class="upload-title">Drop your M-Pesa PDF here</div>
+          <div class="upload-sub">or click to browse</div>
+        </label>
+        <input type="file" id="file-input" accept=".pdf" style="display:none"/>
+        <div id="file-info" style="display:none" class="file-chip">
+          <span>📋</span>
+          <span class="file-chip-name" id="file-name-label"></span>
+          <span class="file-chip-size" id="file-size-label"></span>
+          <button onclick="clearFile()" class="btn-clear">✕ Clear</button>
+        </div>
+        <div id="file-size-warning" style="display:none" class="size-warning">
+          ⏱ <strong>Large file detected.</strong> Processing may take <span id="est-time">20–40</span> seconds. Keep this tab open.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">🔒 Statement Password</div></div>
+      <div class="card-body">
+        <div class="pw-hint">Safaricom sends a <strong>6-digit code via SMS</strong> when you request your statement. Leave blank if already unlocked.</div>
+        <div class="input-row">
+          <input type="password" class="text-input" id="pw-input" placeholder="6-digit SMS code..." maxlength="6" inputmode="numeric"/>
+          <button class="btn-toggle" onclick="togglePw()" id="toggle-btn">Show</button>
+        </div>
+        <div class="pw-tip">💡 Check your SMS inbox for the 6-digit code.</div>
+        <div class="wrong-pw" id="wrong-pw">❌ Wrong password — check the SMS code.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🔍 Filter Transactions <span style="font-weight:400;color:var(--grey);font-size:11px">(optional)</span></div>
+      </div>
+      <div class="card-body">
+        <div class="pw-hint">Type a name, business, or keyword. Separate multiple with a comma.</div>
+        <div class="input-row">
+          <input type="text" class="text-input" id="filter-input"
+                 placeholder="e.g. Adam Kamau, Family Bank, KPLC..."
+                 onkeydown="handleFilterKey(event)"/>
+          <button class="btn-toggle" onclick="clearAllFilters()">✕</button>
+        </div>
+        <div class="filter-tags" id="filter-tags"></div>
+        <div class="filter-info" id="filter-info">Press Enter or comma to add · Leave empty to export all</div>
+      </div>
+    </div>
+
+    <div class="security-note">
+      🔐 <span>PDF extraction runs in your browser. Formatting is sent securely over HTTPS to our servers and immediately discarded — never stored.</span>
+    </div>
+
+    <button class="btn-process" id="btn-process" onclick="processFile()">⚡ Convert to Excel</button>
+
+    <div id="progress-section" class="card" style="display:none">
+      <div class="progress-wrap">
+        <div class="prog-label">
+          <span id="progress-text">Starting...</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="prog-bg"><div class="prog-fill" id="progress-fill" style="width:0%"></div></div>
+        <div class="steps">
+          <div class="step" id="step-1"><div class="step-dot">1</div>Unlocking PDF</div>
+          <div class="step" id="step-2"><div class="step-dot">2</div>Detecting text layer</div>
+          <div class="step" id="step-3"><div class="step-dot">3</div>Extracting all transactions</div>
+          <div class="step" id="step-4"><div class="step-dot">4</div>Applying filters &amp; building Excel</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">What makes this different</div></div>
+      <div class="card-body">
+        <div class="diff-grid">
+          <div class="diff-item"><div class="diff-icon">🔓</div><div class="diff-label">Unlocks password-protected PDFs</div></div>
+          <div class="diff-item"><div class="diff-icon">📝</div><div class="diff-label">Direct text extraction — 100% accurate</div></div>
+          <div class="diff-item"><div class="diff-icon">🔍</div><div class="diff-label">Filter by name, business or keyword</div></div>
+          <div class="diff-item"><div class="diff-icon">📊</div><div class="diff-label">Full details &amp; amounts every row</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="right-empty" id="right-empty">
+      <div class="empty-icon">📊</div>
+      <div class="empty-title">Your results will appear here</div>
+      <div class="empty-sub">Upload a PDF and click Convert to Excel</div>
+    </div>
+
+    <div id="error-section" style="display:none"></div>
+    <div id="results-section" style="display:none"></div>
+
+  </div>
+
+</div>
+
+<!-- PAYWALL MODAL -->
+<div id="paywall-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closePaywall()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title">🔓 Unlock your Excel workbook</div>
+      <div class="modal-head-sub">One-time payment for this statement</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-used" id="modal-used">📊 Your dashboard shows the big picture — free, no limit. The workbook adds every payee ranked, every category totalled, exact monthly figures, and every row as a document you can keep, print or send.</div>
+      <div class="modal-opts">
+        <div class="modal-opt sel" id="opt-payg" onclick="selectPlan('payg')">
+          <div class="opt-radio"></div>
+          <div>
+            <div class="opt-title">Pay As You Go</div>
+            <div class="opt-price">KES 299 <span style="font-size:11px;font-weight:400;color:var(--grey)">per statement</span></div>
+            <div class="opt-desc">Full 7-sheet workbook &amp; Dashboard · No account needed · M-Pesa STK Push</div>
+          </div>
+        </div>
+        <div class="modal-opt soon" id="opt-pro">
+          <div class="opt-radio"></div>
+          <div>
+            <div class="opt-title">Pro — 30 statements/month <span class="soon-tag">COMING SOON</span></div>
+            <div class="opt-price">KES 799 <span style="font-size:11px;font-weight:400;color:var(--grey)">/month</span></div>
+            <div class="opt-desc">Best for accountants &amp; bookkeepers</div>
+          </div>
+        </div>
+        <div class="modal-opt soon" id="opt-business">
+          <div class="opt-radio"></div>
+          <div>
+            <div class="opt-title">Business — Unlimited <span class="soon-tag">COMING SOON</span></div>
+            <div class="opt-price">KES 2,499 <span style="font-size:11px;font-weight:400;color:var(--grey)">/month</span></div>
+            <div class="opt-desc">For firms &amp; teams · API access · 5 users</div>
+          </div>
+        </div>
+      </div>
+      <div id="phone-section">
+        <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:6px">Your M-Pesa Number</div>
+        <div class="phone-row">
+          <div class="phone-prefix">🇰🇪 +254</div>
+          <input type="tel" class="phone-input" id="paywall-phone" placeholder="7XX XXX XXX" maxlength="9" inputmode="numeric"/>
+        </div>
+        <button class="btn-pay" id="btn-pay" onclick="initiatePayment()">📲 Pay KES 299 via M-Pesa</button>
+        <div class="modal-note">A payment prompt will appear on your phone.<br>Enter your M-Pesa PIN — conversion starts automatically once confirmed.</div>
+      </div>
+      <div id="stk-status" style="display:none" class="stk-wrap">
+        <div class="stk-icon">📲</div>
+        <div class="stk-title">Check your phone</div>
+        <div class="stk-sub">An M-Pesa prompt has been sent to <strong id="stk-number"></strong>.<br>Enter your PIN to confirm.<br><br>This page updates automatically once payment is received.</div>
+      </div>
+      <button class="btn-modal-close" onclick="closePaywall()">✕ Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="dashboard-capture" style="display:none;position:fixed;left:-9999px;top:0;width:900px;background:white;padding:24px;font-family:Arial,sans-serif"></div>
+
+<footer>Built by Cheche Technologies · © 2026 · PDF extraction is local · Formatting is server-side, never stored · <a href="https://chechetech.co.ke" style="color:inherit">chechetech.co.ke</a> · <a href="/privacy.html" style="color:inherit">Privacy Policy</a> · <a href="/terms.html" style="color:inherit">Terms of Service</a></footer>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ══════════════════════════════════════════════════════════════════
+// DEMO MODE — this file is converter_demo.html, NOT the production app.
+// Everything below this block is identical to converter.html.
+//
+//   anonymise       remap person names, phone numbers, account refs and
+//                   receipt codes in-browser, before anything is rendered
+//                   or written into the workbook. Known businesses
+//                   (KPLC, Equity, Naivas, Safaricom...) are preserved so
+//                   the categorisation still demos correctly.
+//   freeDownload    workbook download works without payment
+//   blockPayments   never hit the live STK Push API from this page
+//   showPaywall     still open the paywall modal from locked teasers, so
+//                   the real purchase flow can be filmed (no money moves)
+//   analytics       keep demo traffic out of the analytics table
+// ══════════════════════════════════════════════════════════════════
+const _DEMO_MODE = true;
+const DEMO = {
+  anonymise:     true,
+  freeDownload:  true,
+  blockPayments: true,
+  showPaywall:   true,
+  analytics:     false
+};
+
+// Deterministic hash — the same real name always maps to the same fake name
+// within a session AND across re-runs, so a recording stays consistent.
+function _demoHash(s){
+  let h=2166136261;
+  for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); }
+  return Math.abs(h);
+}
+
+// Names that must survive anonymisation — merchants, banks, utilities,
+// institutions and M-Pesa's own system narrations.
+const DEMO_KEEP = /(KPLC|KENYA POWER|STIMA|SAFARICOM|AIRTEL|TELKOM|EQUITY|KCB|NCBA|CO-?OP|ABSA|STANBIC|STANDARD CHARTERED|DTB|DIAMOND TRUST|FAMILY BANK|I&M|GULF AFRICAN|SIDIAN|CREDIT BANK|HFC|SACCO|NAIVAS|CARREFOUR|QUICKMART|CHANDARANA|TUSKYS|MAGUNAS|CLEANSHELF|SHELL|TOTAL|RUBIS|OLA ENERGY|ASTROL|DSTV|GOTV|ZUKU|STARTIMES|SHOWMAX|NETFLIX|SPOTIFY|UBER|BOLT|LITTLE|GLOVO|JUMIA|KILIMALL|KRA|NHIF|SHA|SHIF|NSSF|NTSA|EGERTON|WATER|NAIROBI CITY|NAWASCO|JUBILEE|BRITAM|APA|MADISON|CIC |MINET|OLD MUTUAL|SANLAM|M-?PESA|MPESA|FULIZA|AIRTIME|BUNDLE|TRANSACTION CHARGE|OVERDRAW|OVERDRAFT|HOSPITAL|CLINIC|MEDICAL|PHARMACY|CHEMIST|SCHOOL|ACADEMY|COLLEGE|UNIVERSITY|JUNIOR|CHURCH|SACCO|LTD|LIMITED|ENTERPRISE|AGENC|STORES|SUPERMARKET|HARDWARE|VENTURES|SOLUTIONS|SERVICES|COMPANY|GROUP|BANK|INSURANCE|INVESTMENT|PETROL|STATION|BUTCHER|HOTEL|RESTAURANT|CAFE|LOUNGE|SALON|BARBER|GARAGE|SPARES|WHOLESALE|RETAIL|SHOP|MART|MALL|PLAZA|TOWERS|COURT|APARTMENT)/i;
+
+const DEMO_FIRST = ['JOHN','MARY','PETER','GRACE','DAVID','FAITH','JAMES','ESTHER','SAMUEL','MERCY','DANIEL','JOYCE','KEVIN','ANNE','BRIAN','LUCY','DENNIS','SARAH','COLLINS','JANE','VICTOR','NAOMI','ERIC','CAROL','MOSES','RUTH','ANTONY','WINNIE','GEOFFREY','PURITY','ELIUD','TABITHA','NICHOLAS','BEATRICE','PAUL','AGNES'];
+const DEMO_MID   = ['KAMAU','WANJIKU','OTIENO','MUTHONI','KIPROTICH','ACHIENG','MWANGI','NJERI','ODHIAMBO','CHEBET','MUTUA','WAIRIMU','OMONDI','NYAMBURA','KIPLAGAT','ADHIAMBO','MAINA','WANJIRU','OWINO','JEPKOECH'];
+const DEMO_LAST  = ['NJOROGE','ONYANGO','KIPKEMBOI','WAWERU','OCHIENG','MUTISO','GITHINJI','AKINYI','RUTTO','MAKAU','KARIUKI','ATIENO','KOECH','MULWA','ODUOR','WAMBUA','SANG','MBITHI','OPIYO','LANGAT'];
+
+const _demoNameMap = {};
+function _demoFakeName(real){
+  if(_demoNameMap[real]) return _demoNameMap[real];
+  const h = _demoHash(real);
+  const parts = real.trim().split(/\s+/).length;
+  let fake = DEMO_FIRST[h % DEMO_FIRST.length];
+  if(parts >= 3) fake += ' ' + DEMO_MID[(h >> 5) % DEMO_MID.length];
+  fake += ' ' + DEMO_LAST[(h >> 11) % DEMO_LAST.length];
+  // Guard against two different real names colliding onto one fake name
+  let n = 2;
+  while(Object.values(_demoNameMap).includes(fake)){
+    fake = DEMO_FIRST[(h + n) % DEMO_FIRST.length] + ' ' + DEMO_LAST[(h + n * 7) % DEMO_LAST.length];
+    n++;
+  }
+  _demoNameMap[real] = fake;
+  return fake;
+}
+
+// A person name: 2–4 alphabetic tokens, no business keyword, no digits.
+function _demoIsPersonName(s){
+  if(!s) return false;
+  const t = s.trim();
+  if(DEMO_KEEP.test(t)) return false;
+  if(/\d/.test(t)) return false;
+  const tokens = t.split(/\s+/);
+  if(tokens.length < 2 || tokens.length > 4) return false;
+  return tokens.every(w => /^[A-Za-z][A-Za-z'’.\-]*$/.test(w) && w.length >= 2);
+}
+
+function _demoFakeMsisdn(digits){
+  const h = _demoHash(digits);
+  const prefix = ['701','702','710','712','715','718','720','722','725','728','729','733','740','741','745','748','757','768','790','791'][h % 20];
+  const tail = String(h % 1000000).padStart(6,'0');
+  return '254' + prefix + tail;
+}
+
+function _demoFakeReceipt(code){
+  const h = _demoHash(code);
+  const L = 'ABCDEFGHJKLMNPQRSTUVWXYZ', D = '0123456789';
+  let out = '', seed = h;
+  for(let i = 0; i < code.length; i++){
+    const c = code[i];
+    seed = (seed * 31 + i + 7) >>> 0;
+    if(/[A-Za-z]/.test(c))      out += L[seed % L.length];
+    else if(/[0-9]/.test(c))    out += D[seed % D.length];
+    else                        out += c;
+  }
+  return out;
+}
+
+// Scrub one transaction's detail string.
+function _demoScrubDetail(detail){
+  if(!detail) return detail;
+  let d = detail;
+
+  // Phone numbers — full, masked (2547**678) and local (07xx) forms
+  d = d.replace(/\b254\d{2}\*{2,}\d{2,}\b/g, m => _demoFakeMsisdn(m));
+  d = d.replace(/\b254\d{9}\b/g,             m => _demoFakeMsisdn(m));
+  d = d.replace(/\b0[17]\d{8}\b/g,           m => '0' + _demoFakeMsisdn(m).slice(3));
+
+  // Account references on paybills
+  d = d.replace(/(Acc\.?\s+)([A-Za-z0-9\-\/]+)/gi, (m,p,acc) => p + _demoFakeReceipt(acc));
+
+  // The counterparty name itself. Some narrations ("Funds received from -
+  // 2547XXXXXXXX JANE DOE") leave the MSISDN attached to the payee, so strip
+  // any leading number before deciding whether what's left is a person.
+  const payee = extractPayee(d);
+  const cand  = payee.replace(/^[-\u2013\s]*[\d*]+\s*/, '').trim();
+  if(_demoIsPersonName(cand)){
+    const re = new RegExp(escRegex(cand), 'gi');
+    d = d.replace(re, _demoFakeName(cand.toUpperCase()));
+  }
+  return d;
+}
+
+function demoAnonymise(transactions){
+  transactions.forEach(t => {
+    if(t.receipt) t.receipt = _demoFakeReceipt(t.receipt);
+    t.details = _demoScrubDetail(t.details);
+  });
+  return transactions;
+}
+
+let selectedFile=null, extractedData=null;
+let filterTerms=[];  // active filter terms
+
+// ── FILTER MANAGEMENT ──
+function handleFilterKey(e){
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    addFilterFromInput();
+  }
+}
+
+function addFilterFromInput(){
+  const inp=document.getElementById('filter-input');
+  const raw=inp.value;
+  // Split by comma in case user typed multiple
+  const parts=raw.split(',').map(s=>s.trim()).filter(s=>s.length>0);
+  parts.forEach(term=>{
+    const upper=term.toUpperCase();
+    if(!filterTerms.includes(upper)) filterTerms.push(upper);
+  });
+  inp.value='';
+  renderFilterTags();
+}
+
+function removeFilter(term){
+  filterTerms=filterTerms.filter(t=>t!==term);
+  renderFilterTags();
+}
+
+function clearAllFilters(){
+  filterTerms=[];
+  document.getElementById('filter-input').value='';
+  renderFilterTags();
+}
+
+function renderFilterTags(){
+  const container=document.getElementById('filter-tags');
+  const info=document.getElementById('filter-info');
+  container.innerHTML='';
+  filterTerms.forEach(term=>{
+    const tag=document.createElement('div');
+    tag.className='filter-tag';
+    tag.innerHTML=`${term} <span class="remove" onclick="removeFilter('${term.replace(/'/g,"\\'")}')">×</span>`;
+    container.appendChild(tag);
+  });
+  if(filterTerms.length===0){
+    info.textContent='Press Enter or comma to add a filter · Leave empty to export all transactions';
+  } else {
+    info.textContent=`${filterTerms.length} filter${filterTerms.length>1?'s':''} active — matching rows: any filter must appear in Details, Receipt No., or Date`;
+  }
+}
+
+// Also add filter when user types comma in the input
+document.addEventListener('DOMContentLoaded',()=>{
+  const inp=document.getElementById('filter-input');
+  if(inp){
+    inp.addEventListener('input',e=>{
+      if(e.target.value.includes(',')){
+        addFilterFromInput();
+      }
+    });
+  }
+});
+
+// ── TRANSACTION FILTER ──
+function matchesFilters(txn, terms){
+  if(!terms||terms.length===0) return true;
+  // Search across receipt, datetime, and details — case insensitive
+  const haystack=(
+    (txn.receipt||'') + ' ' +
+    (txn.datetime||'') + ' ' +
+    (txn.details||'')
+  ).toUpperCase();
+  // OR logic — any term matches = include
+  return terms.some(term=>haystack.includes(term));
+}
+
+// ── PDF LOADING ──
+const dropZone=document.getElementById('drop-zone');
+const fileInput=document.getElementById('file-input');
+
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('dragover')});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop',e=>{
+  e.preventDefault();dropZone.classList.remove('dragover');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type==='application/pdf')handleFile(f);
+  else showError('Please upload a PDF file.');
+});
+fileInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0])});
+
+function handleFile(file){
+  selectedFile=file;
+  document.getElementById('file-name-label').textContent=file.name;
+  document.getElementById('file-size-label').textContent=(file.size/1024).toFixed(0)+' KB';
+  document.getElementById('file-info').style.display='flex';
+  document.getElementById('error-section').style.display='none';
+  document.getElementById('results-section').style.display='none';
+  document.getElementById('right-empty').style.display='block';
+  document.getElementById('wrong-pw').style.display='none';
+  const mb=file.size/(1024*1024);
+  const warn=document.getElementById('file-size-warning');
+  const est=document.getElementById('est-time');
+  if(mb>1.5){
+    est.textContent=mb>3.5?'30–60 seconds':mb>2?'20–40 seconds':'10–20 seconds';
+    warn.style.display='block';
+  } else { warn.style.display='none'; }
+}
+
+function togglePw(){
+  const inp=document.getElementById('pw-input'),btn=document.getElementById('toggle-btn');
+  inp.type=inp.type==='password'?'text':'password';
+  btn.textContent=inp.type==='password'?'Show':'Hide';
+}
+
+function setStep(num){
+  for(let i=1;i<=4;i++){
+    const el=document.getElementById('step-'+i);
+    el.classList.remove('done','active');
+    if(i<num){el.classList.add('done');el.querySelector('.step-dot').textContent='✓';}
+    else if(i===num)el.classList.add('active');
+  }
+}
+
+function setProgress(pct,text){
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-pct').textContent=pct+'%';
+  document.getElementById('progress-text').textContent=text;
+}
+
+function showError(msg){
+  document.getElementById('error-section').innerHTML='<div class="error-box">⚠️ '+msg+'</div>';
+  document.getElementById('error-section').style.display='block';
+}
+
+async function loadPDF(ab,password){
+  const params={data:ab};
+  if(password&&password.trim())params.password=password.trim();
+  try{return await pdfjsLib.getDocument(params).promise;}
+  catch(err){
+    if(err.name==='PasswordException'||(err.message||'').toLowerCase().includes('password'))
+      throw new Error(password&&password.trim()?'WRONG_PASSWORD':'NEEDS_PASSWORD');
+    throw err;
+  }
+}
+
+const STAMP_X0=230,STAMP_X1=382,STAMP_Y0=318,STAMP_Y1=474;
+const RECEIPT_RE=/^[A-Z0-9]{8,12}$/;
+const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE=/^\d{2}:\d{2}:\d{2}$/;
+const DATE_IN_STR=/\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}/;
+
+const SKIP=['Page ','Disclaimer','Statement Verif','For self-help','Receipt No',
+  'TRANSACTION','SEND MONEY','RECEIVED MONEY','AGENT','LIPA NA','TOTAL:',
+  'OTHERS:','Customer Name:','Mobile Number:','Email','Statement Period:',
+  'Request Date:','Approved','M-PESA Statement','www.','Safaricom',
+  'To verify','prompts','conditions','Twitter','Facebook','Terms'];
+
+function isSkip(t){
+  if(!t||t.length<3)return true;
+  for(const s of SKIP)if(t.startsWith(s))return true;
+  if(t.includes('safaricom.co.ke')||t.includes('@safaricom'))return true;
+  return false;
+}
+
+function parseNum(s){
+  if(!s)return null;
+  const c=s.replace(/[,\s]/g,'').replace(/[^0-9.\-]/g,'');
+  if(!c)return null;
+  const v=parseFloat(c);
+  return(!isNaN(v)&&Math.abs(v)<5000000)?v:null;
+}
+
+function isBadCont(text){
+  if(DATE_IN_STR.test(text))return true;
+  if(text.includes('Completed'))return true;
+  const p=text.split(/\s+/);
+  return p.length>=2&&RECEIPT_RE.test(p[0])&&DATE_RE.test(p[1]);
+}
+
+async function extractPages(pdf){
+  const pages=[];
+  let totalWords=0;
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i);
+    const vp=page.getViewport({scale:1});
+    const content=await page.getTextContent();
+    const PAID_IN_X=[370,430],WITHDRAWN_X=[430,510],BALANCE_X=[510,612];
+    const items=content.items.filter(item=>{
+      if(!item.str||!item.str.trim())return false;
+      const x=item.transform[4],y=item.transform[5];
+      if(i>1&&x>=STAMP_X0&&x<=STAMP_X1&&y>=STAMP_Y0&&y<=STAMP_Y1)return false;
+      return true;
+    });
+    totalWords+=items.length;
+    const lineMap={};
+    items.forEach(item=>{
+      const x=item.transform[4];
+      const y=vp.height-item.transform[5];
+      const k=Math.round(y/4)*4;
+      if(!lineMap[k])lineMap[k]={det:[],inn:[],out:[],bal:[],y:k};
+      const col=x>=BALANCE_X[0]?'bal':x>=WITHDRAWN_X[0]?'out':x>=PAID_IN_X[0]?'inn':'det';
+      lineMap[k][col].push({text:item.str.trim(),x,y});
+    });
+    pages.push({pageNum:i,lines:Object.values(lineMap).sort((a,b)=>a.y-b.y)});
+    setProgress(10+Math.round((i/pdf.numPages)*35),'Reading page '+i+' of '+pdf.numPages+'...');
+  }
+  return{pages,totalWords};
+}
+
+function parseTransactions(pages){
+  const transactions=[];
+  const MAX_CONT_Y=60;
+  for(const{pageNum,lines}of pages){
+    let current=null,currentY=null;
+    const amountItems=[];
+    for(const line of lines){
+      ['det','inn','out','bal'].forEach(c=>line[c].sort((a,b)=>a.x-b.x));
+      const detText=line.det.map(w=>w.text).join(' ').trim();
+      const innText=line.inn.map(w=>w.text).join(' ').trim();
+      const outText=line.out.map(w=>w.text).join(' ').trim();
+      const balText=line.bal.map(w=>w.text).join(' ').trim();
+      const innVal=parseNum(innText);
+      const outVal=parseNum(outText);
+      const balVal=parseNum(balText);
+      if(innVal!==null)amountItems.push({val:innVal,col:'inn',y:line.y});
+      if(outVal!==null)amountItems.push({val:outVal<0?outVal:-outVal,col:'out',y:line.y});
+      if(balVal!==null)amountItems.push({val:balVal,col:'bal',y:line.y});
+      if(isSkip(detText))continue;
+      const parts=detText.split(/\s+/);
+      const isNew=parts.length>=3&&RECEIPT_RE.test(parts[0])&&DATE_RE.test(parts[1]);
+      if(isNew){
+        if(current)transactions.push(current);
+        const receipt=parts[0];
+        const dateP=parts[1];
+        const timeP=parts[2]&&TIME_RE.test(parts[2])?parts[2]:'00:00:00';
+        const skipLen=parts[0].length+1+dateP.length+1+timeP.length;
+        let rawDet=detText.substring(skipLen).trim().replace(/[|\\]/g,' ').trim();
+        const cp=rawDet.indexOf('Completed');
+        if(cp>=0)rawDet=rawDet.substring(0,cp).trim();
+        rawDet=rawDet.replace(/[-_|]+\s*$/,'').trim();
+        current={receipt,datetime:dateP+' '+timeP,details:rawDet,
+                 paid_in:null,withdrawn:null,balance:null,page:pageNum,y:line.y};
+        currentY=line.y;
+      } else if(current){
+        const distY=line.y-currentY;
+        if(distY>MAX_CONT_Y||isBadCont(detText)){
+          transactions.push(current);current=null;currentY=null;continue;
+        }
+        const cont=detText.replace(/[|\\]/g,' ').trim();
+        if(cont&&cont.length>2&&!/^[-_|\s]{0,5}$/.test(cont))
+          current.details=(current.details+' '+cont).trim();
+      }
+    }
+    if(current)transactions.push(current);
+    const TOL=8;
+    for(const amt of amountItems){
+      let best=null,bestDist=TOL*8;
+      for(const txn of transactions){
+        if(txn.page!==pageNum)continue;
+        const dist=amt.y-txn.y;
+        if(dist>=-TOL&&dist<=TOL*8&&Math.abs(dist)<bestDist){
+          bestDist=Math.abs(dist);best=txn;
+        }
+      }
+      if(!best)continue;
+      if(amt.col==='inn'&&best.paid_in===null)best.paid_in=amt.val;
+      else if(amt.col==='out'&&best.withdrawn===null)best.withdrawn=amt.val;
+      else if(amt.col==='bal'&&best.balance===null)best.balance=amt.val;
+    }
+  }
+  transactions.forEach(t=>delete t.y);
+  return transactions;
+}
+
+// ── HIGHLIGHT matching terms in text ──
+function highlight(text, terms){
+  if(!terms||terms.length===0) return escHtml(text);
+  let result=escHtml(text);
+  terms.forEach(term=>{
+    const re=new RegExp('('+escRegex(term)+')','gi');
+    result=result.replace(re,'<span class="highlight">$1</span>');
+  });
+  return result;
+}
+function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escRegex(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+
+function extractPayee(detail){
+  if(!detail) return 'Unknown';
+  let d = detail.trim();
+  d = d.replace(/Customer Transfer(?:Fuliza MPesa)? to\s*[-\u2013]?\s*\d*\**\d+\s*/gi,'').trim();
+  d = d.replace(/Customer Transfer of Funds Charge/gi,'Transaction Charge').trim();
+  d = d.replace(/Customer Send Money to Micro SME Business\s*with Fuliza MPesa to\s*[-\u2013]?\s*\d*\**\d+\s*/gi,'').trim();
+  d = d.replace(/Customer Payment to Small Business to\s*[-\u2013]?\s*\d*\**\d+\s*/gi,'').trim();
+  d = d.replace(/Merchant Payment(?:\s+Fuliza M-Pesa)?\s+Online to\s+\d+\s*[-\u2013]?\s*/gi,'').trim();
+  d = d.replace(/Merchant Payment Online to\s+\d+\s*[-\u2013]?\s*/gi,'').trim();
+  d = d.replace(/Pay Bill(?:\s+Online)?(?:\s+Fuliza M-Pesa)?\s+to\s+\d+\s*[-\u2013]?\s*/gi,'').trim();
+  d = d.replace(/Card Pay Bill Online to\s+\d+\s*[-\u2013]?\s*/gi,'').trim();
+  d = d.replace(/Business Payment from\s+\d+\s*[-\u2013]?\s*/gi,'').trim();
+  d = d.replace(/Funds received from\s*[-\u2013]?\s*/gi,'').trim();
+  d = d.replace(/OD Loan Repayment to\s+\d+\s*[-\u2013]?\s*/gi,'M-PESA Overdraw').trim();
+  d = d.replace(/OverDraft of Credit Party/gi,'Fuliza Credit').trim();
+  d = d.replace(/Customer Transfer Fuliza MPesa to\s*[-\u2013]?\s*\d*\**\d+\s*/gi,'').trim();
+  d = d.replace(/Pay Bill Online Fuliza M-Pesa to\s+\d+\s*[-\u2013]?\s*/gi,'').trim();
+  d = d.replace(/Airtime Purchase(?:\s+with Fuliza)?/gi,'Airtime Purchase').trim();
+  d = d.replace(/Customer Bundle Purchase(?:\s+with Fuliza)?\s+to\s+\d+\w*\s*[-\u2013]?\s*/gi,'').trim();
+  d = d.replace(/via API\.?\s+Original conversation ID is[\s\d-]+\.?/gi,'').trim();
+  d = d.replace(/Original conversation ID is[\s\d-]+\.?/gi,'').trim();
+  d = d.replace(/Acc\.?\s+[A-Z0-9]+/gi,'').trim();
+  d = d.replace(/ATL\w+/gi,'').trim();
+  // Narration tails Safaricom appends after the name — same payee, must not split into two entries
+  d = d.replace(/\s+for which\b.*$/gi,'').trim();
+  d = d.replace(/\s+\(?reversal\)?.*$/gi,'').trim();
+  d = d.replace(/\s+with Fuliza(?: M-?Pesa)?\b.*$/gi,'').trim();
+  d = d.replace(/\s+/g,' ').trim();
+  d = d.replace(/^[-\u2013.,;:\s]+|[-\u2013.,;:\s]+$/g,'').trim();
+  return d || detail.substring(0,30);
+}
+
+function categorise(detail,paid_in,withdrawn){
+  const d=(detail||'').toLowerCase();
+  if(paid_in&&paid_in>0){
+    if(d.includes('business payment')||d.includes('family bank')||d.includes('equity')||d.includes('kcb')||d.includes('ncba')||d.includes('co-op')||d.includes('mombo')||d.includes('sacco')) return 'Money Received (Bank/SACCO)';
+    if(d.includes('overdraft of credit')||d.includes('fuliza')) return 'Fuliza / Overdraft Credit';
+    if(d.includes('funds received')||d.includes('paypal deposit')||d.includes('reversal')) return 'Money Received (M-Pesa)';
+    return 'Money Received';
+  }
+  if(d.includes('od loan')||d.includes('overdraw')||d.includes('m-pesa overdraw')||d.includes('232323')) return '__EXCLUDE__ Loan Repayment';
+  if(d.includes('transfer of funds charge')||d.includes('pay bill charge')||d.includes('pay merchant charge')||d.includes('withdrawal charge')) return '__EXCLUDE__ Transaction Charges';
+  if(d.includes('airtime')||d.includes('data bundle')||d.includes('safaricom data')) return 'Airtime & Data';
+  if(d.includes('kplc')||d.includes('888880')||d.includes('water')||d.includes('power')||d.includes('nawasco')) return 'Utilities';
+  if(d.includes('merchant')||d.includes('buy goods')||d.includes('carrefour')||d.includes('naivas')||d.includes('supermarket')||d.includes('mart')||d.includes('shop')) return 'Shopping & Merchants';
+  if(d.includes('pay bill')||d.includes('paybill')||d.includes('card pay')) return 'Bill Payment';
+  if(d.includes('transfer to')||d.includes('send money')||d.includes('customer transfer')) return 'Send Money';
+  if(d.includes('school')||d.includes('academy')||d.includes('college')||d.includes('university')||d.includes('junior')) return 'Education';
+  if(d.includes('sacco')||d.includes('loan')||d.includes('credit')) return 'Loans & Savings';
+  if(d.includes('restaurant')||d.includes('hotel')||d.includes('pub')||d.includes('food')||d.includes('dishes')) return 'Food & Dining';
+  if(d.includes('shell')||d.includes('petrol')||d.includes('fuel')||d.includes('totalenergies')||d.includes('gas')) return 'Fuel & Transport';
+  return 'Other';
+}
+
+function buildExcel(transactions, method, filterTerms){
+  const wb = XLSX.utils.book_new();
+  const isFiltered = filterTerms && filterTerms.length > 0;
+  const totalIn  = transactions.reduce((s,t)=>s+(t.paid_in||0),0);
+  const totalOut = transactions.reduce((s,t)=>s+(t.withdrawn||0),0);
+  const net = totalIn + totalOut;
+  const fulizaAwarded   = transactions.reduce((s,t)=>s+(categorise(t.details,t.paid_in,t.withdrawn)==='Fuliza / Overdraft Credit'?(t.paid_in||0):0),0);
+  const fulizaRecovered = transactions.reduce((s,t)=>{const cat=categorise(t.details,t.paid_in,t.withdrawn);return s+(cat==='__EXCLUDE__ Loan Repayment'?Math.abs(t.withdrawn||0):0);},0);
+  const fulizaNetCost   = fulizaAwarded - fulizaRecovered;
+  const cleanIn         = totalIn  - fulizaAwarded;
+  const cleanOut        = Math.abs(totalOut) - fulizaRecovered;
+
+  // Helper: is this an analysis-excluded transaction?
+  const isExcluded = (t) => {
+    const cat = categorise(t.details, t.paid_in, t.withdrawn);
+    return cat.startsWith('__EXCLUDE__') || cat.startsWith('Money Received') || cat.startsWith('Fuliza / Overdraft Credit');
+  };
+
+  // Clean category label (strip __EXCLUDE__ prefix)
+  const cleanCat = (cat) => cat.replace('__EXCLUDE__ ','');
+
+  // ── SHEET 1: All Transactions (formatted) ──
+  const sheetName = isFiltered ? 'Filtered Transactions' : 'All Transactions';
+  const rows = [['#','Receipt No.','Date & Time','Full Details','Payee / Merchant','Category','Paid In (KES)','Withdrawn (KES)','Balance (KES)']];
+  transactions.forEach((t,i)=>{
+    rows.push([i+1,t.receipt,t.datetime,t.details,
+      extractPayee(t.details),
+      cleanCat(categorise(t.details,t.paid_in,t.withdrawn)),
+      t.paid_in!=null?t.paid_in:'',
+      t.withdrawn!=null?t.withdrawn:'',
+      t.balance!=null?t.balance:'']);
+  });
+  const ws1 = XLSX.utils.aoa_to_sheet(rows);
+  ws1['!cols']=[{wch:5},{wch:14},{wch:20},{wch:45},{wch:25},{wch:22},{wch:16},{wch:16},{wch:16}];
+
+  // Style header row
+  const headerStyle = { font:{bold:true,color:{rgb:'FFFFFF'},sz:11}, fill:{fgColor:{rgb:'1F3864'}}, alignment:{horizontal:'center',wrapText:true} };
+  const greenStyle  = { font:{bold:true,color:{rgb:'007A3D'},sz:10}, alignment:{horizontal:'right'} };
+  const redStyle    = { font:{color:{rgb:'C62828'},sz:10}, alignment:{horizontal:'right'} };
+  const altStyle    = { fill:{fgColor:{rgb:'F2F9F5'}} };
+
+  // Apply styles to header
+  ['A1','B1','C1','D1','E1','F1','G1','H1','I1'].forEach(cell=>{
+    if(ws1[cell]) ws1[cell].s = headerStyle;
+  });
+
+  // Style data rows
+  for(let i=2;i<=rows.length;i++){
+    const t = transactions[i-2];
+    if(!t) continue;
+    const rowFill = i%2===0 ? {fill:{fgColor:{rgb:'F8FFF8'}}} : {};
+    const gCell = `G${i}`, hCell = `H${i}`;
+    if(ws1[gCell] && ws1[gCell].v) ws1[gCell].s = greenStyle;
+    if(ws1[hCell] && ws1[hCell].v) ws1[hCell].s = redStyle;
+  }
+
+  // Freeze header row
+  ws1['!freeze'] = {xSplit:0, ySplit:1};
+  XLSX.utils.book_append_sheet(wb,ws1,sheetName);
+
+  // ── SHEET 2: Summary ──
+  const filterNote = isFiltered?'Filters: '+filterTerms.join(', '):'No filter — all transactions';
+  const sum=[
+    ['M-PESA STATEMENT FINANCIAL ANALYSIS — Cheche Technologies v4.0'],[''],
+    ['Extraction Method',method],['Filter Applied',filterNote],
+    ['Total Transactions',transactions.length],[''],
+    ['CASH FLOW SUMMARY',''],
+    ['Total Paid In (KES)',parseFloat(totalIn.toFixed(2))],
+    ['Total Withdrawn (KES)',parseFloat(totalOut.toFixed(2))],
+    ['Net Cash Flow (KES)',parseFloat(net.toFixed(2))],
+    [''],['NOTE','Loan repayments and transaction charges are excluded from expenditure analysis below'],
+  ];
+  const ws2 = XLSX.utils.aoa_to_sheet(sum);
+  ws2['!cols']=[{wch:35},{wch:55}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Summary');
+
+  // ── SHEET 3: Payee Analysis (exclude loans/charges) ──
+  const payeeMap={};
+  transactions.forEach(t=>{
+    if(!t.withdrawn||t.withdrawn>=0) return;
+    if(isExcluded(t)) return; // skip loan repayments and charges
+    const payee=extractPayee(t.details);
+    const cat=cleanCat(categorise(t.details,t.paid_in,t.withdrawn));
+    if(!payeeMap[payee]) payeeMap[payee]={payee,total:0,count:0,category:cat};
+    payeeMap[payee].total+=Math.abs(t.withdrawn);
+    payeeMap[payee].count++;
+  });
+  const payeeList=Object.values(payeeMap).sort((a,b)=>b.total-a.total);
+  const payeeRows=[['Rank','Payee / Merchant','Category','Total Spent (KES)','Transactions','Avg per Transaction (KES)'],
+    ['','Note: Loan repayments & transaction charges excluded from this analysis','','','','']];
+  payeeList.forEach((p,i)=>{
+    payeeRows.push([i+1,p.payee,p.category,parseFloat(p.total.toFixed(2)),p.count,parseFloat((p.total/p.count).toFixed(2))]);
+  });
+  const ws3=XLSX.utils.aoa_to_sheet(payeeRows);
+  ws3['!cols']=[{wch:6},{wch:32},{wch:22},{wch:18},{wch:14},{wch:22}];
+  // Style headers
+  ['A1','B1','C1','D1','E1','F1'].forEach(cell=>{ if(ws3[cell]) ws3[cell].s=headerStyle; });
+  XLSX.utils.book_append_sheet(wb,ws3,'Payee Analysis');
+
+  // ── SHEET 4: Category Breakdown (exclude loans/charges) ──
+  const catMap={};
+  transactions.forEach(t=>{
+    if(isExcluded(t)) return;
+    const cat=cleanCat(categorise(t.details,t.paid_in,t.withdrawn));
+    if(!catMap[cat]) catMap[cat]={cat,totalOut:0,totalIn:0,count:0};
+    if(t.withdrawn&&t.withdrawn<0){catMap[cat].totalOut+=Math.abs(t.withdrawn);catMap[cat].count++;}
+    if(t.paid_in&&t.paid_in>0){catMap[cat].totalIn+=t.paid_in;catMap[cat].count++;}
+  });
+  const catList=Object.values(catMap).filter(c=>c.totalOut>0).sort((a,b)=>b.totalOut-a.totalOut);
+  const grandTotal=catList.reduce((s,c)=>s+c.totalOut,0);
+  const catRows=[['Category','Total Spent (KES)','% of Spend','Transactions'],
+    ['Note: Loan repayments & transaction charges excluded','','','']];
+  catList.forEach(c=>{
+    catRows.push([c.cat,parseFloat(c.totalOut.toFixed(2)),
+      grandTotal>0?parseFloat((c.totalOut/grandTotal*100).toFixed(1))+'%':'0%',c.count]);
+  });
+  const ws4=XLSX.utils.aoa_to_sheet(catRows);
+  ws4['!cols']=[{wch:28},{wch:18},{wch:14},{wch:14}];
+  ['A1','B1','C1','D1'].forEach(cell=>{ if(ws4[cell]) ws4[cell].s=headerStyle; });
+  XLSX.utils.book_append_sheet(wb,ws4,'Category Breakdown');
+
+  // ── SHEET 5: Top Transactions (exclude loans/charges) ──
+  const spendTxns=transactions.filter(t=>t.withdrawn&&t.withdrawn<0&&!isExcluded(t)).sort((a,b)=>a.withdrawn-b.withdrawn);
+  const receipts=transactions.filter(t=>t.paid_in&&t.paid_in>0).sort((a,b)=>b.paid_in-a.paid_in);
+  const freqMap={};
+  transactions.forEach(t=>{
+    if(!t.withdrawn||t.withdrawn>=0||isExcluded(t)) return;
+    const payee=extractPayee(t.details);
+    freqMap[payee]=(freqMap[payee]||0)+1;
+  });
+  const freqList=Object.entries(freqMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const t5rows=[
+    ['TOP 10 LARGEST SINGLE EXPENDITURES (loans & charges excluded)'],
+    ['Rank','Receipt','Date','Payee / Merchant','Amount (KES)'],
+    ...spendTxns.slice(0,10).map((t,i)=>[i+1,t.receipt,(t.datetime||'').substring(0,10),extractPayee(t.details),parseFloat(Math.abs(t.withdrawn).toFixed(2))]),
+    [''],
+    ['TOP 10 LARGEST RECEIPTS'],
+    ['Rank','Receipt','Date','Source','Amount (KES)'],
+    ...receipts.slice(0,10).map((t,i)=>[i+1,t.receipt,(t.datetime||'').substring(0,10),extractPayee(t.details),parseFloat(t.paid_in.toFixed(2))]),
+    [''],
+    ['MOST FREQUENT PAYEES (loans & charges excluded)'],
+    ['Rank','Payee / Merchant','No. of Transactions'],
+    ...freqList.map((f,i)=>[i+1,f[0],f[1]])
+  ];
+  const ws5=XLSX.utils.aoa_to_sheet(t5rows);
+  ws5['!cols']=[{wch:6},{wch:14},{wch:12},{wch:32},{wch:18}];
+  XLSX.utils.book_append_sheet(wb,ws5,'Top Transactions');
+
+  // ── SHEET 6: Monthly Summary ──
+  const monthMap={};
+  transactions.forEach(t=>{
+    if(!t.datetime) return;
+    const month=t.datetime.substring(0,7);
+    if(!monthMap[month]) monthMap[month]={month,totalIn:0,totalOut:0,spend:0,count:0};
+    if(t.paid_in&&t.paid_in>0){monthMap[month].totalIn+=t.paid_in;monthMap[month].count++;}
+    if(t.withdrawn&&t.withdrawn<0){
+      monthMap[month].totalOut+=Math.abs(t.withdrawn);
+      if(!isExcluded(t)) monthMap[month].spend+=Math.abs(t.withdrawn);
+      monthMap[month].count++;
+    }
+  });
+  const monthList=Object.values(monthMap).sort((a,b)=>a.month.localeCompare(b.month));
+  const monthRows=[['Month','Total Received (KES)','Total Withdrawn (KES)','Actual Spend (KES)*','Net (KES)','Transactions'],
+    ['*Actual spend excludes loan repayments and transaction charges','','','','','']];
+  monthList.forEach(m=>{
+    monthRows.push([m.month,parseFloat(m.totalIn.toFixed(2)),parseFloat(m.totalOut.toFixed(2)),
+      parseFloat(m.spend.toFixed(2)),parseFloat((m.totalIn-m.totalOut).toFixed(2)),m.count]);
+  });
+  monthRows.push(['TOTAL',
+    parseFloat(monthList.reduce((s,m)=>s+m.totalIn,0).toFixed(2)),
+    parseFloat(monthList.reduce((s,m)=>s+m.totalOut,0).toFixed(2)),
+    parseFloat(monthList.reduce((s,m)=>s+m.spend,0).toFixed(2)),
+    parseFloat(monthList.reduce((s,m)=>s+m.totalIn-m.totalOut,0).toFixed(2)),
+    monthList.reduce((s,m)=>s+m.count,0)]);
+  const ws6=XLSX.utils.aoa_to_sheet(monthRows);
+  ws6['!cols']=[{wch:12},{wch:22},{wch:22},{wch:22},{wch:16},{wch:14}];
+  ['A1','B1','C1','D1','E1','F1'].forEach(cell=>{ if(ws6[cell]) ws6[cell].s=headerStyle; });
+  XLSX.utils.book_append_sheet(wb,ws6,'Monthly Summary');
+
+  return{wb,totalIn,totalOut,net,cleanIn,cleanOut,fulizaAwarded,fulizaRecovered,fulizaNetCost,count:transactions.length,catList,payeeList,monthList};
+}
+
+
+async function processFile(){
+  if(!selectedFile){showError('Please select a PDF file first.');return;}
+
+  // Commit any pending filter text
+  const pendingFilter=document.getElementById('filter-input').value.trim();
+  if(pendingFilter) addFilterFromInput();
+
+  const password=document.getElementById('pw-input').value;
+  document.getElementById('wrong-pw').style.display='none';
+  document.getElementById('error-section').style.display='none';
+  document.getElementById('results-section').style.display='none';
+  document.getElementById('progress-section').style.display='block';
+  document.getElementById('btn-process').disabled=true;
+
+  try{
+    setStep(1);setProgress(5,'Unlocking PDF...');
+    const ab=await selectedFile.arrayBuffer();
+    let pdf;
+    try{pdf=await loadPDF(ab,password);}
+    catch(err){
+      document.getElementById('progress-section').style.display='none';
+      document.getElementById('btn-process').disabled=false;
+      if(err.message==='WRONG_PASSWORD'){
+        document.getElementById('wrong-pw').style.display='block';
+        document.getElementById('pw-input').focus();
+      }else if(err.message==='NEEDS_PASSWORD'){
+        document.getElementById('wrong-pw').textContent='🔒 This PDF is password protected. Enter the 6-digit code from your SMS.';
+        document.getElementById('wrong-pw').style.display='block';
+        document.getElementById('pw-input').focus();
+      }else showError('Could not open PDF: '+err.message);
+      return;
+    }
+
+    setStep(2);setProgress(10,'Detecting text layer...');
+    const testPage=await pdf.getPage(1);
+    const testContent=await testPage.getTextContent();
+    const hasTextLayer=testContent.items.some(item=>item.str&&item.str.trim().length>2);
+    const method=hasTextLayer
+      ?'Direct text extraction (100% accurate)'
+      :'Coordinate-based extraction (print-to-PDF mode)';
+
+    setStep(3);
+    setProgress(15,hasTextLayer?'Text layer found — extracting directly...':'Image PDF — using smart extraction...');
+    const{pages}=await extractPages(pdf);
+
+    setProgress(55,'Parsing transactions...');
+    await new Promise(r=>setTimeout(r,100));
+    const allTransactions=parseTransactions(pages);
+
+    // DEMO: scrub identities before anything is filtered, rendered or exported
+    if(_DEMO_MODE && DEMO.anonymise){
+      setProgress(60,'Randomising counterparty names...');
+      demoAnonymise(allTransactions);
+    }
+
+    // Apply filters
+    setStep(4);setProgress(80,'Applying filters...');
+    await new Promise(r=>setTimeout(r,100));
+
+    const activeFilters=[...filterTerms];
+    const filtered=allTransactions.filter(t=>matchesFilters(t,activeFilters));
+
+    setProgress(88,'Building Excel...');
+    await new Promise(r=>setTimeout(r,300));
+    const{wb,totalIn,totalOut,net,cleanIn,cleanOut,fulizaAwarded,fulizaRecovered,fulizaNetCost,count,catList,payeeList,monthList}=buildExcel(filtered,method,activeFilters);
+    setProgress(100,'Done! ✓');
+
+    extractedData={
+      wb, allTransactions, filtered,
+      totalIn, totalOut, net, cleanIn, cleanOut, fulizaAwarded, fulizaRecovered, fulizaNetCost, count,
+      method, activeFilters,
+      catList, payeeList, monthList
+    };
+    _paidForCurrent=false; // a new statement always needs its own payment
+    showResults(filtered,allTransactions.length,totalIn,totalOut,net,cleanIn,cleanOut,fulizaAwarded,fulizaRecovered,fulizaNetCost,count,method,activeFilters,catList,payeeList,monthList);
+
+  }catch(err){
+    document.getElementById('progress-section').style.display='none';
+    document.getElementById('btn-process').disabled=false;
+    track('convert_fail',{reason:String(err.message||err).slice(0,120)});
+    showError('An error occurred: '+err.message);
+  }
+}
+
+function showResults(transactions,totalAll,totalIn,totalOut,net,cleanIn,cleanOut,fulizaAwarded,fulizaRecovered,fulizaNetCost,count,method,activeFilters,catList,payeeList,monthList){
+  const absOut=Math.abs(totalOut);
+  const fmt=n=>Math.abs(n).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const isText=method.includes('Direct');
+  const isFiltered=activeFilters&&activeFilters.length>0;
+  const methodBadge=`<span class="method-badge ${isText?'method-text':'method-ocr'}">${isText?'📝 Text Layer':'🔍 Smart Extract'}</span>`;
+
+  const filterBar=isFiltered
+    ?`<div class="filter-result-bar">🔍 Showing <strong>${count.toLocaleString()}</strong> of ${totalAll.toLocaleString()} transactions matching: ${activeFilters.map(t=>`<strong>"${t}"</strong>`).join(', ')}</div>`:'';
+
+  const PREVIEW_ROWS=3;
+  const preview=transactions.slice(0,PREVIEW_ROWS).map(t=>{
+    const payeeName=extractPayee(t.details);
+    const shortName=payeeName.length>30?payeeName.substring(0,30)+'...':payeeName;
+    const detHighlighted=highlight(shortName,activeFilters);
+    return`<tr>
+      <td style="width:85px">${escHtml(t.receipt)}</td>
+      <td style="width:88px">${(t.datetime||'').substring(0,10)}</td>
+      <td>${detHighlighted}</td>
+      <td style="text-align:right;width:80px;color:${t.paid_in?'#007A3D':'#C62828'};font-weight:500">
+        ${t.paid_in?'+'+fmt(t.paid_in):t.withdrawn?'-'+fmt(Math.abs(t.withdrawn)):'—'}
+      </td>
+    </tr>`;
+  }).join('');
+  const lockedRowCount=Math.max(0,transactions.length-PREVIEW_ROWS);
+
+  // ── Biggest single transaction (a real number they haven't manually tallied) ──
+  let statHtml='';
+  const spendTx=transactions.filter(t=>t.withdrawn&&t.withdrawn<0).sort((a,b)=>a.withdrawn-b.withdrawn);
+  const receiptTx=transactions.filter(t=>t.paid_in&&t.paid_in>0).sort((a,b)=>b.paid_in-a.paid_in);
+  if(spendTx.length||receiptTx.length){
+    const big=spendTx[0], rec=receiptTx[0];
+    statHtml=`<div style="display:flex;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap">
+      ${big?`<div class="stat-highlight" style="flex:1;min-width:150px"><div class="sh-label">Biggest expense</div><div class="sh-val" style="color:var(--red)">KES ${fmt(big.withdrawn)}</div><div class="sh-sub">${escHtml(extractPayee(big.details))}</div></div>`:''}
+      ${rec?`<div class="stat-highlight" style="flex:1;min-width:150px"><div class="sh-label">Biggest receipt</div><div class="sh-val" style="color:var(--green)">KES ${fmt(rec.paid_in)}</div><div class="sh-sub">${escHtml(extractPayee(rec.details))}</div></div>`:''}
+    </div>`;
+  }
+
+  // ── CATEGORY PIE CHART (top 6 categories by spend, full list & exact totals in the workbook) ──
+  const allCats = (catList||[]).filter(c=>c.totalOut>0&&!c.cat.includes('EXCLUDE')&&c.cat!=='Transaction Charges'&&c.cat!=='Loan Repayment');
+  const topCats = allCats.slice(0,6);
+  const lockedCatCount = Math.max(0, allCats.length-6);
+  const pieColors = ['#007A3D','#C62828','#1565C0','#F57C00','#6A1B9A','#00838F'];
+  let pieHtml = '';
+  if(topCats.length > 0){
+    const grandTotal = topCats.reduce((s,c)=>s+c.totalOut,0);
+    let cumAngle = -90;
+    const size = 140;
+    const cx = size/2, cy = size/2, r = size/2 - 8;
+    let slices = '';
+    topCats.forEach((c,i)=>{
+      const pct = c.totalOut / grandTotal;
+      const angle = pct * 360;
+      const startRad = (cumAngle * Math.PI)/180;
+      const endRad   = ((cumAngle+angle) * Math.PI)/180;
+      const x1=cx+r*Math.cos(startRad), y1=cy+r*Math.sin(startRad);
+      const x2=cx+r*Math.cos(endRad),   y2=cy+r*Math.sin(endRad);
+      const large = angle>180?1:0;
+      slices += `<path d="M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${large},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${pieColors[i]}" stroke="white" stroke-width="2" title="${c.cat}: KES ${fmt(c.totalOut)}"/>`;
+      cumAngle += angle;
+    });
+    const legend = topCats.map((c,i)=>`<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;font-size:11px"><span style="width:10px;height:10px;background:${pieColors[i]};border-radius:2px;flex-shrink:0"></span><span style="color:#333">${c.cat}</span><span style="margin-left:auto;color:#666;font-weight:500">KES ${fmt(c.totalOut)}</span></div>`).join('');
+    pieHtml = `
+      <div style="margin-bottom:1.2rem">
+        <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">📊 Spending by Category</div>
+        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+          <svg width="${size}" height="${size}" style="flex-shrink:0">${slices}</svg>
+          <div style="flex:1;min-width:160px">${legend}
+            ${lockedCatCount>0?`<div style="font-size:11px;color:#999;margin-top:4px">🔒 +${lockedCatCount} more categor${lockedCatCount===1?'y':'ies'} with exact totals — <a href="#" onclick="event.preventDefault();_requestUnlock('categories')" style="color:var(--green);font-weight:600">unlock</a></div>`:''}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ── TOP PAYEES BAR CHART — top 3 free, the full ranking is a paid unlock ──
+  let barHtml = '';
+  const FREE_PAYEES=3;
+  const allPayees = (payeeList||[]).filter(p=>!p.payee.includes('Overdraw')&&!p.payee.includes('Fuliza')&&!p.payee.includes('Charge'));
+  const topPayees = allPayees.slice(0,FREE_PAYEES);
+  const lockedPayees = allPayees.slice(FREE_PAYEES,FREE_PAYEES+5);
+  if(topPayees.length > 0){
+    const maxVal = allPayees[0].total;
+    const bar=(p,i,dim)=>{
+      const pct = Math.max(4, (p.total/maxVal)*100);
+      return`<div style="margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">
+          <span style="color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${dim?'••••• •••••':escHtml(p.payee)}</span>
+          <span style="color:#C62828;font-weight:600;flex-shrink:0;margin-left:4px">${dim?'KES ••••••':'KES '+fmt(p.total)}</span>
+        </div>
+        <div style="background:#f0f0f0;border-radius:3px;height:8px">
+          <div style="background:${i===0?'#C62828':'#007A3D'};width:${pct}%;height:100%;border-radius:3px"></div>
+        </div>
+      </div>`;
+    };
+    const bars = topPayees.map((p,i)=>bar(p,i,false)).join('');
+    const lockedBars = lockedPayees.map((p,i)=>bar(p,i+FREE_PAYEES,true)).join('');
+    const lockedCount = Math.max(0, allPayees.length-FREE_PAYEES);
+    barHtml = `
+      <div style="margin-bottom:1.2rem">
+        <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">💸 Top Payees by Spend</div>
+        ${bars}
+        ${lockedCount>0?`<div class="locked-wrap">
+          <div class="locked-blur">${lockedBars||bar({payee:'Payee name',total:maxVal*0.4},99,true)}</div>
+          <div class="locked-cta">
+            <div class="locked-cta-text">🔒 ${lockedCount} more payee${lockedCount===1?'':'s'} ranked, with exact amounts — <a href="#" onclick="event.preventDefault();_requestUnlock('payees')" style="color:var(--green);font-weight:700">unlock in your workbook</a></div>
+          </div>
+        </div>`:''}
+      </div>`;
+  }
+
+  // ── MONTHLY TREND ──
+  let monthHtml = '';
+  if(monthList && monthList.length > 1){
+    const maxMonth = Math.max(...monthList.map(m=>Math.max(m.totalIn,m.totalOut)));
+    const bars = monthList.map(m=>{
+      const inPct  = maxMonth > 0 ? (m.totalIn/maxMonth)*80 : 0;
+      const outPct = maxMonth > 0 ? (m.totalOut/maxMonth)*80 : 0;
+      return`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+        <div style="display:flex;gap:2px;align-items:flex-end;height:60px">
+          <div style="width:10px;background:#007A3D;height:${inPct}%;border-radius:2px 2px 0 0" title="In: KES ${fmt(m.totalIn)}"></div>
+          <div style="width:10px;background:#C62828;height:${outPct}%;border-radius:2px 2px 0 0" title="Out: KES ${fmt(m.totalOut)}"></div>
+        </div>
+        <div style="font-size:9px;color:#888;transform:rotate(-45deg);transform-origin:top left;margin-top:8px;white-space:nowrap">${m.month.substring(5)}</div>
+      </div>`;
+    }).join('');
+    monthHtml = `
+      <div style="margin-bottom:1.2rem">
+        <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">📅 Monthly Trend <span style="font-weight:400;font-size:10px"><span style="color:#007A3D">■</span> In &nbsp;<span style="color:#C62828">■</span> Out</span></div>
+        <div style="display:flex;gap:4px;align-items:flex-end;padding-bottom:24px;overflow-x:auto">${bars}</div>
+        <div class="locked-wrap" style="height:64px">
+          <div class="locked-blur" style="padding:8px;font-size:10px;color:#888;font-family:monospace">Jun 128,400.00 96,210.00 &nbsp;Jul 141,050.00 133,870.00 &nbsp;Aug 152,600.00 149,020.00</div>
+          <div class="locked-cta">
+            <div class="locked-cta-text">🔒 Exact monthly figures — Received, Withdrawn &amp; Actual Spend — <a href="#" onclick="event.preventDefault();_requestUnlock('monthly_table')" style="color:var(--green);font-weight:700">unlock</a></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const dlLabel=(_paidForCurrent || (_DEMO_MODE && DEMO.freeDownload))
+    ?`⬇️ Download Your Excel Workbook`
+    :`🔓 Unlock Full Excel Workbook — KES 299`;
+  const downloadButtons=`<div id="dl-error" style="display:none" class="dl-error"></div>
+      <button class="btn-dl-formatted" id="btn-dl-formatted" onclick="downloadFormatted()">${dlLabel}</button>`;
+
+  document.getElementById('right-empty').style.display='none';
+  document.getElementById('results-section').innerHTML=`
+    <div class="card">
+      <div class="results-header">
+        <span class="results-title">✅ Done — ${count.toLocaleString()} transactions</span>
+        ${methodBadge}
+      </div>
+      ${isFiltered?`<div class="filter-bar">🔍 Showing <strong>${count.toLocaleString()}</strong> of ${totalAll.toLocaleString()} matching: ${(activeFilters||[]).map(t=>'<strong>"'+t+'"</strong>').join(', ')}</div>`:''}
+      <div class="kpi-note">Actual cash flow — Fuliza excluded</div>
+      <div class="kpi-grid">
+        <div class="kpi-card green"><div class="kpi-label">Total Received</div><div class="kpi-value green">KES ${fmt(cleanIn)}</div></div>
+        <div class="kpi-card red"><div class="kpi-label">Total Withdrawn</div><div class="kpi-value red">KES ${fmt(cleanOut)}</div></div>
+        <div class="kpi-card ${(cleanIn-cleanOut)>=0?'green':'red'}"><div class="kpi-label">Net Cash Flow</div><div class="kpi-value ${(cleanIn-cleanOut)>=0?'green':'red'}">${(cleanIn-cleanOut)<0?'-':''}KES ${fmt(cleanIn-cleanOut)}</div></div>
+        <div class="kpi-card blue"><div class="kpi-label">${isFiltered?'Matched':'Total'} Rows</div><div class="kpi-value blue">${count.toLocaleString()}</div></div>
+      </div>
+      <div class="fuliza-panel">
+        <div class="fuliza-title">⚡ FULIZA / OVERDRAFT SUMMARY</div>
+        <div class="fuliza-grid">
+          <div><div class="fuliza-label">Fuliza Awarded</div><div class="fuliza-value" style="color:#F57C00">KES ${fmt(fulizaAwarded)}</div></div>
+          <div><div class="fuliza-label">Fuliza Recovered</div><div class="fuliza-value" style="color:var(--green)">KES ${fmt(fulizaRecovered)}</div></div>
+          <div><div class="fuliza-label">Net Fuliza Cost</div><div class="fuliza-value" style="color:${fulizaNetCost>0?'var(--red)':'var(--green)'}">KES ${fmt(fulizaNetCost)}</div></div>
+        </div>
+      </div>
+      ${statHtml}
+      ${pieHtml}
+      ${barHtml}
+      ${monthHtml}
+      <div class="txn-wrap">
+        <div style="font-size:11px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Preview — first ${Math.min(PREVIEW_ROWS,transactions.length)} of ${count.toLocaleString()} transactions</div>
+        <table class="preview">
+          <thead><tr><th>Receipt</th><th>Date</th><th>Details</th><th>Amount</th></tr></thead>
+          <tbody>${preview}</tbody>
+        </table>
+        ${lockedRowCount>0?`<div class="locked-wrap" style="height:44px;margin-top:2px">
+          <div class="locked-blur" style="padding:8px;font-size:10px;color:#888;font-family:monospace">RBC7XY9Z 2026-08-14 Merchant Payment 2,450.00 · RBD2LM4N 2026-08-13 Pay Bill 1,200.00</div>
+          <div class="locked-cta">
+            <button class="locked-cta-btn" onclick="_requestUnlock('row_list')">See all ${count.toLocaleString()} rows</button>
+          </div>
+        </div>`:''}
+      </div>
+      <div style="margin:0 18px 12px;padding:10px 12px;background:var(--green-light);border-radius:8px;font-size:11px;color:var(--green)">
+        📊 Your dashboard above is free, forever, no limit. Unlock the workbook for the full ranked payee list, every category totalled, exact monthly figures, all ${count.toLocaleString()} rows, and a document you can keep, print or send — <strong>7 sheets in one file</strong>.
+      </div>
+      <div class="download-wrap">
+        ${downloadButtons}
+        <button class="btn-reset" onclick="resetApp()">↺ Convert another statement</button>
+      </div>
+    </div>`;
+  document.getElementById('results-section').style.display='block';
+}
+
+
+function buildDashboardHTML(data){
+  const {totalIn,totalOut,net,cleanIn,cleanOut,fulizaAwarded,fulizaRecovered,fulizaNetCost,count,catList,payeeList,monthList,activeFilters} = data;
+  const fmt=n=>Math.abs(n).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const topCats=(catList||[]).filter(c=>c.totalOut>0&&!c.cat.includes('EXCLUDE')&&c.cat!=='Transaction Charges'&&c.cat!=='Loan Repayment').slice(0,6);
+  const topPayees=(payeeList||[]).filter(p=>!p.payee.includes('Overdraw')&&!p.payee.includes('Fuliza')&&!p.payee.includes('Charge')).slice(0,8);
+  const pieColors=['#007A3D','#C62828','#1565C0','#F57C00','#6A1B9A','#00838F'];
+
+  // Build SVG pie chart
+  let pie='';
+  if(topCats.length>0){
+    const grand=topCats.reduce((s,c)=>s+c.totalOut,0);
+    let cum=-90;
+    const sz=160,cx=80,cy=80,r=72;
+    topCats.forEach((c,i)=>{
+      const pct=c.totalOut/grand;
+      const ang=pct*360;
+      const s1=(cum*Math.PI)/180, e1=((cum+ang)*Math.PI)/180;
+      const x1=cx+r*Math.cos(s1),y1=cy+r*Math.sin(s1);
+      const x2=cx+r*Math.cos(e1),y2=cy+r*Math.sin(e1);
+      const lg=ang>180?1:0;
+      pie+=`<path d="M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${lg},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${pieColors[i]}" stroke="white" stroke-width="2"/>`;
+      cum+=ang;
+    });
+  }
+
+  // Build bar chart (top payees)
+  const maxP=topPayees.length>0?topPayees[0].total:1;
+  const payeeBars=topPayees.map((p,i)=>`
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">
+        <span style="color:#222;font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.payee}</span>
+        <span style="color:#C62828;font-weight:700">KES ${fmt(p.total)}</span>
+      </div>
+      <div style="background:#eee;border-radius:3px;height:10px">
+        <div style="background:${i===0?'#C62828':'#007A3D'};width:${Math.max(3,(p.total/maxP)*100)}%;height:100%;border-radius:3px"></div>
+      </div>
+    </div>`).join('');
+
+  // Monthly bars
+  const maxM=monthList&&monthList.length>0?Math.max(...monthList.map(m=>Math.max(m.totalIn,m.totalOut))):1;
+  const mBars=(monthList||[]).map(m=>`
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:40px">
+      <div style="display:flex;gap:3px;align-items:flex-end;height:70px">
+        <div style="width:12px;background:#007A3D;height:${Math.max(2,(m.totalIn/maxM)*70)}px;border-radius:2px 2px 0 0" title="In"></div>
+        <div style="width:12px;background:#C62828;height:${Math.max(2,(m.totalOut/maxM)*70)}px;border-radius:2px 2px 0 0" title="Out"></div>
+      </div>
+      <div style="font-size:9px;color:#888;writing-mode:vertical-rl;transform:rotate(180deg);height:28px;text-align:center">${(m.month||'').substring(5)}</div>
+    </div>`).join('');
+
+  // Cat legend
+  const catLegend=topCats.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px">
+      <span style="width:12px;height:12px;background:${pieColors[i]};border-radius:2px;flex-shrink:0;display:inline-block"></span>
+      <span style="color:#333;flex:1">${c.cat}</span>
+      <span style="color:#222;font-weight:700">KES ${fmt(c.totalOut)}</span>
+    </div>`).join('');
+
+  return `
+  <div style="font-family:Arial,sans-serif;color:#111;max-width:860px">
+    <!-- Header -->
+    <div style="background:#007A3D;color:white;padding:16px 20px;border-radius:8px 8px 0 0;margin-bottom:0">
+      <div style="font-size:20px;font-weight:700">🔥 Cheche Technologies</div>
+      <div style="font-size:13px;opacity:.85">M-Pesa Statement Analysis — ${new Date().toLocaleDateString('en-KE',{year:'numeric',month:'long',day:'numeric'})}</div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px;background:#f8f8f8;border:1px solid #e0e0e0;border-top:none">
+      <div style="background:white;border-radius:8px;padding:14px;border-left:4px solid #007A3D;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+        <div style="font-size:11px;color:#888;margin-bottom:4px">Total Received</div>
+        <div style="font-size:18px;font-weight:700;color:#007A3D">KES ${fmt(cleanIn)}</div>
+      </div>
+      <div style="background:white;border-radius:8px;padding:14px;border-left:4px solid #C62828;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+        <div style="font-size:11px;color:#888;margin-bottom:4px">Total Paid Out</div>
+        <div style="font-size:18px;font-weight:700;color:#C62828">KES ${fmt(cleanOut)}</div>
+      </div>
+      <div style="background:white;border-radius:8px;padding:14px;border-left:4px solid ${net>=0?'#007A3D':'#C62828'};box-shadow:0 1px 4px rgba(0,0,0,.08)">
+        <div style="font-size:11px;color:#888;margin-bottom:4px">Net Cash Flow</div>
+        <div style="font-size:18px;font-weight:700;color:${net>=0?'#007A3D':'#C62828'}">${net<0?'-':''}KES ${fmt(net)}</div>
+      </div>
+      <div style="background:white;border-radius:8px;padding:14px;border-left:4px solid #1565C0;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+        <div style="font-size:11px;color:#888;margin-bottom:4px">Transactions</div>
+        <div style="font-size:18px;font-weight:700;color:#1565C0">${count.toLocaleString()}</div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #e0e0e0;border-top:none">
+      <!-- Pie Chart -->
+      <div style="padding:16px;border-right:1px solid #e0e0e0;background:white">
+        <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">📊 Spending by Category</div>
+        <div style="display:flex;gap:16px;align-items:flex-start">
+          <svg width="160" height="160" style="flex-shrink:0">${pie}</svg>
+          <div style="flex:1">${catLegend}</div>
+        </div>
+      </div>
+      <!-- Bar Chart -->
+      <div style="padding:16px;background:white">
+        <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">💸 Top Payees by Spend</div>
+        ${payeeBars}
+      </div>
+    </div>
+
+    <!-- Monthly Trend -->
+    <div style="padding:16px;background:white;border:1px solid #e0e0e0;border-top:none">
+      <div style="font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">
+        📅 Monthly Trend &nbsp;<span style="font-weight:400;font-size:10px"><span style="color:#007A3D">■</span> Received &nbsp;<span style="color:#C62828">■</span> Spent</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-end;padding-bottom:4px">${mBars}</div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#f5f5f5;border:1px solid #e0e0e0;border-top:none;padding:10px 16px;font-size:10px;color:#888;border-radius:0 0 8px 8px">
+      Generated by Cheche Technologies M-Pesa Converter v4.0 · chechetech.co.ke · Loan repayments and transaction charges excluded from expenditure analysis
+    </div>
+  </div>`;
+}
+
+async function downloadFormatted(){
+  if(!extractedData) return;
+  if(!_paidForCurrent && !(_DEMO_MODE && DEMO.freeDownload)){
+    _requestUnlock('download_button');
+    return;
+  }
+
+  const btn = document.getElementById('btn-dl-formatted');
+  const errBox = document.getElementById('dl-error');
+  const originalText = btn.textContent;
+  if(errBox) errBox.style.display='none';
+  btn.textContent = '⏳ Building your workbook... up to 60 seconds for large statements';
+  btn.disabled = true;
+
+  try{
+    // Workbook is assembled in-browser, then sent for formatting (processed and discarded server-side)
+    const rawWb = extractedData.wb;
+    const dashIdx = rawWb.SheetNames.indexOf('Dashboard');
+    if(dashIdx >= 0){ rawWb.SheetNames.splice(dashIdx,1); delete rawWb.Sheets['Dashboard']; }
+    const rawBytes = XLSX.write(rawWb, {type:'base64', bookType:'xlsx'});
+    const isFiltered = extractedData.activeFilters && extractedData.activeFilters.length > 0;
+    const suffix = isFiltered ? '_filtered' : '_all';
+    const filename = (selectedFile ? selectedFile.name.replace('.pdf','') : 'mpesa_statement') + suffix + '_Cheche.xlsx';
+
+    // Call Lambda formatter API
+    const response = await fetch('https://vtfoxobw6l.execute-api.us-east-1.amazonaws.com/prod/format', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        excel: rawBytes,
+        filename: filename
+      })
+    });
+
+    if(!response.ok){
+      const err = await response.text();
+      throw new Error('Formatter error: ' + err);
+    }
+
+    const result = await response.json();
+    
+    // Download the formatted Excel
+    const formattedBytes = atob(result.excel);
+    const byteArray = new Uint8Array(formattedBytes.length);
+    for(let i=0; i<formattedBytes.length; i++) byteArray[i] = formattedBytes.charCodeAt(i);
+    const blob = new Blob([byteArray], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = result.filename || filename;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    track('download_success',{txns:extractedData.count});
+
+  } catch(err){
+    console.error('[CHECHE] Formatter error:',err);
+    track('download_fail',{reason:String(err.message||err).slice(0,120)});
+    if(errBox){
+      errBox.innerHTML='❌ We couldn\'t build your workbook just now. Nothing has been used up — please try again.<br><span style="font-size:11px;color:#888">If this keeps happening, email support@chechetech.co.ke</span>';
+      errBox.style.display='block';
+    }
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+function clearFile(){
+  selectedFile = null;
+  fileInput.value = '';
+  document.getElementById('file-info').style.display = 'none';
+  document.getElementById('file-size-warning').style.display = 'none';
+  document.getElementById('wrong-pw').style.display = 'none';
+  document.getElementById('error-section').style.display = 'none';
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('right-empty').style.display = 'block';
+}
+function resetApp(){
+  selectedFile=null;extractedData=null;_paidForCurrent=false;_pendingDownload=false;
+  fileInput.value='';
+  document.getElementById('pw-input').value='';
+  document.getElementById('pw-input').type='password';
+  document.getElementById('toggle-btn').textContent='Show';
+  document.getElementById('file-info').style.display='none';
+  document.getElementById('file-size-warning').style.display='none';
+  document.getElementById('wrong-pw').style.display='none';
+  document.getElementById('right-empty').style.display='block';
+  document.getElementById('progress-section').style.display='none';
+  document.getElementById('results-section').style.display='none';
+  document.getElementById('error-section').style.display='none';
+  document.getElementById('btn-process').disabled=false;
+  for(let i=1;i<=4;i++){
+    const el=document.getElementById('step-'+i);
+    el.classList.remove('done','active');
+    el.querySelector('.step-dot').textContent=i;
+  }
+  setProgress(0,'');
+}
+
+// ── PAYWALL ──
+// Free = unlimited dashboard views, in the browser, no account, no limit.
+// Paid = the Excel workbook itself. Every download requires payment — there is
+// no free download, ever. This closes the "clear localStorage / new browser"
+// loophole entirely, since the free tier has nothing left to reset.
+const PLAN_LABELS  = {payg:'KES 299', pro:'KES 799/month', business:'KES 2,499/month'};
+const PLANS_LIVE   = ['payg']; // pro/business open once accounts ship
+
+// ── ANALYTICS (anonymous) ──
+// A random client ID lives in localStorage. Events carry usage metadata only —
+// never statement contents. The ID is attached to the payment record on /stkpush
+// so paid usage can be joined to an MSISDN after the fact.
+const CHECHE_CID_KEY = 'cheche_cid';
+function _clientId(){
+  try{
+    let id=localStorage.getItem(CHECHE_CID_KEY);
+    if(!id){
+      id=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)).replace(/-/g,'');
+      localStorage.setItem(CHECHE_CID_KEY,id);
+    }
+    return id;
+  }catch(e){ return 'nostorage'; }
+}
+const _utm=(()=>{ try{ const q=new URLSearchParams(location.search); return {utm_source:q.get('utm_source')||undefined, utm_campaign:q.get('utm_campaign')||undefined}; }catch(e){ return {}; } })();
+const _ref=(()=>{ try{ return document.referrer?new URL(document.referrer).hostname:undefined; }catch(e){ return undefined; } })();
+function track(event,meta){
+  if(_DEMO_MODE && !DEMO.analytics) return;  // demo traffic never reaches /track
+  try{
+    const payload=JSON.stringify({client_id:_clientId(),event,meta:Object.assign({ref:_ref},_utm,meta||{})});
+    // text/plain keeps this a "simple" request — no CORS preflight, survives page unload
+    const blob=new Blob([payload],{type:'text/plain'});
+    if(!(navigator.sendBeacon&&navigator.sendBeacon(PAYMENT_API+'/track',blob))){
+      fetch(PAYMENT_API+'/track',{method:'POST',body:blob,keepalive:true}).catch(()=>{});
+    }
+  }catch(e){}
+}
+track('page_view');
+const PAYMENT_API  = 'https://jkv6ay89l0.execute-api.us-east-1.amazonaws.com/prod';
+let _selectedPlan   = 'payg';
+let _pendingDownload = false;   // true when the paywall was opened by a download attempt
+let _paidForCurrent = false;    // true once THIS statement's workbook has been paid for
+let _checkoutId     = null;
+let _pollInterval   = null;
+
+// Opens the paywall in the context of unlocking the workbook (button click or a
+// locked teaser inside the dashboard). `source` is for analytics only.
+function _requestUnlock(source){
+  track('paywall_shown',{source});
+  if(_DEMO_MODE && !DEMO.showPaywall) return;  // teasers stay visual only
+  _pendingDownload = true;
+  showPaywall();
+}
+
+// Demo stand-in for the STK Push step — same modal, nothing leaves the browser.
+function _showDemoPaymentNotice(){
+  document.getElementById('stk-status').style.display='none';
+  document.getElementById('phone-section').style.display='block';
+  const existing = document.getElementById('paywall-error');
+  if(existing) existing.remove();
+  const e=document.createElement('div');
+  e.id='paywall-error';
+  e.style.cssText='padding:10px 12px;background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;font-size:12px;color:#7a5c00;margin-bottom:12px;line-height:1.6';
+  e.innerHTML='🎬 <strong>Demo build</strong> — no M-Pesa prompt is sent and no money moves.<br><span style="font-size:11px;color:#8a6d00">Close this and the workbook downloads free. Payments are live on the real converter.</span>';
+  const ps=document.getElementById('phone-section');
+  ps.insertBefore(e,ps.firstChild);
+}
+
+function selectPlan(p){
+  if(!PLANS_LIVE.includes(p)) return;
+  _selectedPlan=p;
+  ['payg','pro','business'].forEach(x=>document.getElementById('opt-'+x).classList.toggle('sel',x===p));
+  document.getElementById('btn-pay').textContent='📲 Pay '+PLAN_LABELS[p]+' via M-Pesa';
+}
+
+function showPaywall(){
+  const reminder=document.getElementById('modal-used');
+  if(reminder){
+    const n=extractedData?extractedData.count.toLocaleString():'every';
+    reminder.innerHTML=`📊 Your dashboard shows the big picture — free, no limit. The workbook adds every payee ranked, every category totalled, exact monthly figures, and all <strong>${n}</strong> rows as a document you can keep, print or send.`;
+  }
+  document.getElementById('paywall-modal').style.display='flex';
+  document.getElementById('phone-section').style.display='block';
+  document.getElementById('stk-status').style.display='none';
+  document.getElementById('paywall-phone').value='';
+  selectPlan('payg');
+}
+
+function closePaywall(){
+  document.getElementById('paywall-modal').style.display='none';
+  if(_pollInterval){ clearInterval(_pollInterval); _pollInterval=null; }
+  _pendingDownload=false;
+}
+
+function initiatePayment(){
+  if(_DEMO_MODE && DEMO.blockPayments){
+    _showDemoPaymentNotice();
+    return;
+  }
+  const raw=document.getElementById('paywall-phone').value.replace(/\D/g,'');
+  if(raw.length!==9||!/^[71]/.test(raw)){ alert('Enter a valid Safaricom number e.g. 712345678'); return; }
+  const phone='254'+raw;
+  const plan=_selectedPlan;
+
+  document.getElementById('phone-section').style.display='none';
+  document.getElementById('stk-status').style.display='block';
+  document.getElementById('stk-number').textContent='+254 '+raw;
+  const existingErr=document.getElementById('paywall-error');
+  if(existingErr) existingErr.remove();
+
+  track('stk_initiated');
+  fetch(PAYMENT_API+'/stkpush',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({phone,plan,client_id:_clientId()})
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.success && data.checkout_request_id){
+      _checkoutId=data.checkout_request_id;
+      _pollInterval=setInterval(_pollPayment,3000);
+      // Auto-timeout after 35 seconds if no response
+      setTimeout(()=>{
+        if(_pollInterval){
+          clearInterval(_pollInterval); _pollInterval=null;
+          _showPaywallError('Payment timed out. Please try again.');
+        }
+      }, 35000);
+    } else {
+      _showPaywallError(data.error||'STK Push failed. Please try again.');
+    }
+  })
+  .catch(err=>{
+    _showPaywallError('Network error. Please check your connection and try again.');
+    console.error('[CHECHE] STK error:',err);
+  });
+}
+
+function _pollPayment(){
+  if(!_checkoutId) return;
+  fetch(PAYMENT_API+'/status?id='+encodeURIComponent(_checkoutId))
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.status==='PAID'){
+      clearInterval(_pollInterval); _pollInterval=null;
+      _onPaymentConfirmed();
+    } else if(data.status==='FAILED'){
+      clearInterval(_pollInterval); _pollInterval=null;
+      _showPaywallError('Payment was cancelled or failed. Please try again.');
+    }
+  })
+  .catch(err=>console.error('[CHECHE] Poll error:',err));
+}
+
+function _showPaywallError(msg){
+  document.getElementById('stk-status').style.display='none';
+  document.getElementById('phone-section').style.display='block';
+  // Remove any existing error
+  const existing = document.getElementById('paywall-error');
+  if(existing) existing.remove();
+  const e=document.createElement('div');
+  e.id='paywall-error';
+  e.style.cssText='padding:10px 12px;background:#FFF5F5;border:1px solid #FFCDD2;border-radius:8px;font-size:12px;color:#C62828;margin-bottom:12px;line-height:1.6';
+  e.innerHTML='❌ '+msg+'<br><span style="font-size:11px;color:#888">Enter your number again and try once more.</span>';
+  const ps=document.getElementById('phone-section');
+  ps.insertBefore(e,ps.firstChild);
+  // Clear phone input for retry
+  document.getElementById('paywall-phone').value='';
+}
+
+function _onPaymentConfirmed(){
+  closePaywall();
+  _paidForCurrent=true;
+  const btn=document.getElementById('btn-dl-formatted');
+  if(btn && !btn.disabled) btn.textContent='⬇️ Download Your Excel Workbook';
+  if(_pendingDownload){
+    _pendingDownload=false;
+    downloadFormatted();
+  }
+}
+
+// Conversion and the live dashboard are always free and unlimited — no gating here.
+const _runProcess = processFile;
+processFile = function(){
+  track('convert_start',{file_kb:selectedFile?Math.round(selectedFile.size/1024):undefined});
+  _runProcess();
+};
+
+// convert_success with statement shape only (counts, span, method) — no amounts or names
+const _baseShowResults = showResults;
+showResults = function(...a){
+  try{
+    const [,totalAll,,,,,,,,,,method,activeFilters,,,monthList]=a;
+    track('convert_success',{txns:totalAll,months:(monthList||[]).length,method:String(method||'').includes('Direct')?'text':'smart',filtered:!!(activeFilters&&activeFilters.length)});
+  }catch(e){}
+  _baseShowResults(...a);
+};
+
+
+</script>
+</body>
+</html>
