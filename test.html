@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="robots" content="noindex,nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>M-Pesa Statement Converter — Cheche Technologies</title>
@@ -1403,7 +1404,7 @@ const PLANS_LIVE   = ['payg']; // pro/business open once accounts ship
 // A random client ID lives in localStorage. Events carry usage metadata only —
 // never statement contents. The ID is attached to the payment record on /stkpush
 // so paid usage can be joined to an MSISDN after the fact.
-const CHECHE_CID_KEY = 'cheche_cid';
+const CHECHE_CID_KEY = 'cheche_cid_demo';
 function _clientId(){
   try{
     let id=localStorage.getItem(CHECHE_CID_KEY);
@@ -1437,9 +1438,10 @@ let _pollInterval   = null;
 // Opens the paywall in the context of unlocking the workbook (button click or a
 // locked teaser inside the dashboard). `source` is for analytics only.
 function _requestUnlock(source){
-  track('paywall_shown',{source});
+  // FREE DEMO BUILD � /test : unlock the workbook with no payment
+  track('paywall_shown',{source,build:'test'});
   _pendingDownload = true;
-  showPaywall();
+  _onPaymentConfirmed();
 }
 
 function selectPlan(p){
