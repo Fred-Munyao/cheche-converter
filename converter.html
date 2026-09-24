@@ -132,6 +132,10 @@ nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem
 .btn-dl-formatted{padding:10px 14px;background:var(--green);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:white;width:100%;text-align:left;transition:background .2s}
 .btn-dl-formatted:hover{background:var(--green-dark)}
 .btn-dl-formatted:disabled{background:#9CA3AF;cursor:not-allowed}
+.xb-consent{display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.45;margin:10px 0 12px;padding:10px 12px;border:1px solid #C8E6C9;border-radius:8px;background:#F5FBF7;text-align:left;color:#374151;cursor:pointer}
+.xb-consent input{margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#007A3D;cursor:pointer}
+.xb-consent a{color:#007A3D;font-weight:600}
+.btn-pay:disabled{opacity:.5;cursor:not-allowed}
 .dl-error{padding:10px 12px;background:var(--red-light);border:1px solid #FFCDD2;border-radius:8px;font-size:12px;color:var(--red);line-height:1.6}
 .modal-opt.soon{opacity:.55;cursor:default;pointer-events:none}
 .soon-tag{display:inline-block;font-size:10px;font-weight:700;background:var(--green-light);color:var(--green);padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
@@ -356,7 +360,11 @@ footer{text-align:center;font-size:11px;color:#9CA3AF;padding:2rem 1rem}
           <div class="phone-prefix">🇰🇪 +254</div>
           <input type="tel" class="phone-input" id="paywall-phone" placeholder="7XX XXX XXX" maxlength="9" inputmode="numeric"/>
         </div>
-        <button class="btn-pay" id="btn-pay" onclick="initiatePayment()">📲 Pay KES 299 via M-Pesa</button>
+        <label class="xb-consent" for="xb-consent">
+          <input type="checkbox" id="xb-consent" onchange="_xbSync()">
+          <span>I consent to my transaction data and payment details being processed on secure servers in the United States (Amazon Web Services) to create my Excel workbook and record my payment. Workbook data is deleted automatically and payment records are kept for accounting, as set out in the <a href="/privacy.html#international-transfers" target="_blank" rel="noopener">Privacy Policy</a>.</span>
+        </label>
+        <button class="btn-pay" id="btn-pay" onclick="initiatePayment()" disabled>📲 Pay KES 299 via M-Pesa</button>
         <div class="modal-note">A payment prompt will appear on your phone.<br>Enter your M-Pesa PIN — conversion starts automatically once confirmed.</div>
       </div>
       <div id="stk-status" style="display:none" class="stk-wrap">
@@ -371,7 +379,7 @@ footer{text-align:center;font-size:11px;color:#9CA3AF;padding:2rem 1rem}
 
 <div id="dashboard-capture" style="display:none;position:fixed;left:-9999px;top:0;width:900px;background:white;padding:24px;font-family:Arial,sans-serif"></div>
 
-<footer>Built by Cheche Technologies · © 2026 · PDF extraction is local · Formatting is server-side, never stored · <a href="https://chechetech.co.ke" style="color:inherit">chechetech.co.ke</a> · <a href="/privacy.html" style="color:inherit">Privacy Policy</a> · <a href="/terms.html" style="color:inherit">Terms of Service</a></footer>
+<footer>Built by Cheche Technologies · © 2026 · PDF extraction is local · Workbook data is deleted automatically · <a href="https://chechetech.co.ke" style="color:inherit">chechetech.co.ke</a> · <a href="/privacy.html" style="color:inherit">Privacy Policy</a> · <a href="/terms.html" style="color:inherit">Terms of Service</a></footer>
 
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -1308,7 +1316,7 @@ async function downloadFormatted(){
 
   try{
     // Workbook is assembled in-browser, uploaded to private encrypted storage for formatting,
-    // and deleted automatically (raw data right after the build, results within 24 hours)
+    // and deleted automatically (raw data right after the build, results within two days)
     const rawWb = extractedData.wb;
     const dashIdx = rawWb.SheetNames.indexOf('Dashboard');
     if(dashIdx >= 0){ rawWb.SheetNames.splice(dashIdx,1); delete rawWb.Sheets['Dashboard']; }
@@ -1505,6 +1513,20 @@ function selectPlan(p){
   document.getElementById('btn-pay').textContent='📲 Pay '+PLAN_LABELS[p]+' via M-Pesa';
 }
 
+// ── CROSS-BORDER CONSENT ──
+// Standalone, unticked consent shown before any data leaves the browser (DPA 2019).
+// Server-side enforcement on /stkpush ships with the go-live session.
+const XB_CONSENT_VERSION = '2026-09-v1';
+function _xbSync(){
+  const box=document.getElementById('xb-consent'), btn=document.getElementById('btn-pay');
+  if(box&&btn) btn.disabled=!box.checked;
+}
+function _xbReset(){
+  const box=document.getElementById('xb-consent');
+  if(box) box.checked=false;
+  _xbSync();
+}
+
 function showPaywall(){
   const reminder=document.getElementById('modal-used');
   if(reminder){
@@ -1516,6 +1538,7 @@ function showPaywall(){
   document.getElementById('stk-status').style.display='none';
   document.getElementById('paywall-phone').value='';
   selectPlan('payg');
+  _xbReset();
 }
 
 function closePaywall(){
@@ -1525,6 +1548,8 @@ function closePaywall(){
 }
 
 function initiatePayment(){
+  const xb=document.getElementById('xb-consent');
+  if(!xb||!xb.checked){ alert('Please tick the consent box to continue.'); return; }
   const raw=document.getElementById('paywall-phone').value.replace(/\D/g,'');
   if(raw.length!==9||!/^[71]/.test(raw)){ alert('Enter a valid Safaricom number e.g. 712345678'); return; }
   const phone='254'+raw;
@@ -1540,7 +1565,7 @@ function initiatePayment(){
   fetch(PAYMENT_API+'/stkpush',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({phone,plan,client_id:_clientId()})
+    body:JSON.stringify({phone,plan,client_id:_clientId(),consent_xb:true,consent_version:XB_CONSENT_VERSION})
   })
   .then(r=>r.json())
   .then(data=>{

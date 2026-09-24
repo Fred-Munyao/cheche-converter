@@ -38,14 +38,14 @@ footer{text-align:center;font-size:11px;color:#9CA3AF;padding:2rem 1rem}
 
 <div class="wrap">
   <h1>Privacy Policy</h1>
-  <div class="updated">Last updated: September 18, 2026</div>
+  <div class="updated">Last updated: September 24, 2026</div>
 
   <div class="callout">
-    <strong>The short version:</strong> Your M-Pesa PDF is read entirely in your browser and is never uploaded. Your dashboard is built in your browser too. Only when you buy the Excel workbook are the transactions extracted from your statement uploaded — securely, to private encrypted storage — so our server can format them. That upload is deleted as soon as your workbook is built, and the finished workbook is deleted automatically within two days. We do not keep, sell, or share your financial data.
+    <strong>The short version:</strong> Your M-Pesa PDF is read entirely in your browser and is never uploaded. Your dashboard is built in your browser too. Only when you buy the Excel workbook, and only with your consent, are the transactions extracted from your statement uploaded — securely, to private encrypted storage on Amazon Web Services servers in the United States — so our server can format them. That upload is deleted as soon as your workbook is built, and the finished workbook is deleted automatically within two days. We do not keep, sell, or share your financial data.
   </div>
 
   <h2>1. Who we are</h2>
-  <p>Cheche Technologies ("Cheche", "we", "us") operates the M-Pesa Statement Converter at chechetech.co.ke. We are based in Nairobi, Kenya. For any privacy questions, contact us at <a href="mailto:privacy@chechetech.co.ke">privacy@chechetech.co.ke</a>.</p>
+  <p>Cheche Technologies ("Cheche", "we", "us") is a service of CHECHE INNOVATIONS AFRICA, a business registered in Kenya (Business No. BN-EOSBRJZP), P.O. Box 13382-00100, Nairobi. We operate the M-Pesa Statement Converter at chechetech.co.ke and are responsible for the personal data described in this policy. For any privacy questions, contact us at <a href="mailto:privacy@chechetech.co.ke">privacy@chechetech.co.ke</a>.</p>
 
   <h2>2. What data we process</h2>
   <p>When you use the converter, the following data may be processed:</p>
@@ -61,12 +61,21 @@ footer{text-align:center;font-size:11px;color:#9CA3AF;padding:2rem 1rem}
     <tr><td>PDF unlocking &amp; extraction</td><td>Your browser (client-side)</td><td>Never leaves your device</td></tr>
     <tr><td>Workbook assembly</td><td>Your browser (client-side)</td><td>Never leaves your device</td></tr>
     <tr><td>Dashboard in the converter</td><td>Your browser (client-side)</td><td>Never leaves your device</td></tr>
-    <tr><td>Excel workbook formatting (paid)</td><td>AWS server (Lambda) and private storage (Amazon S3)</td><td>The extracted transactions are uploaded over encrypted HTTPS to private, encrypted storage that is not publicly accessible. They are deleted as soon as your workbook has been built — normally within a minute. The finished workbook is delivered through a private download link that expires after 10 minutes, and is deleted automatically within two days. Statement contents are never written to our logs</td></tr>
-    <tr><td>Payment (STK Push)</td><td>AWS server + Safaricom Daraja API</td><td>Phone number and payment amount sent to initiate M-Pesa payment. Successful payments are retained for reconciliation and accounting; pending or failed attempts are deleted automatically after 30 days</td></tr>
-    <tr><td>Usage analytics</td><td>AWS server</td><td>Anonymous identifier and event metadata stored for up to 18 months, then deleted automatically. No statement contents</td></tr>
+    <tr><td>Excel workbook formatting (paid)</td><td>AWS server (Lambda) and private storage (Amazon S3), United States</td><td>The extracted transactions are uploaded over encrypted HTTPS to private, encrypted storage that is not publicly accessible. They are deleted as soon as your workbook has been built — normally within a minute. The finished workbook is delivered through a private download link that expires after 10 minutes, and is kept only so you can download it again if your first download fails; it is deleted automatically within two days. Statement contents are never written to our logs</td></tr>
+    <tr><td>Payment (STK Push)</td><td>AWS server (United States) + Safaricom Daraja API</td><td>Phone number and payment amount sent to initiate M-Pesa payment. Successful payments are retained for reconciliation and accounting; pending or failed attempts are deleted automatically after 30 days</td></tr>
+    <tr><td>Usage analytics</td><td>AWS server (United States)</td><td>Anonymous identifier and event metadata stored for up to 18 months, then deleted automatically. No statement contents</td></tr>
   </table>
 
-  <h2>4. What we never do</h2>
+  <h2 id="international-transfers">4. International data transfers</h2>
+  <p>Our servers are provided by Amazon Web Services (AWS) and are located in the United States (us-east-1, Virginia). This means the following are processed outside Kenya:</p>
+  <ul>
+    <li><strong>The transactions extracted from your statement</strong>, when you buy the Excel workbook — deleted as soon as your workbook is built, with the finished workbook deleted within two days (see Section 3).</li>
+    <li><strong>Your payment record</strong> — kept for reconciliation, accounting and tax.</li>
+    <li><strong>Anonymous usage data</strong> — never includes statement contents.</li>
+  </ul>
+  <p>We only send your transaction and payment data to these servers with your explicit consent, which we ask for separately on the payment screen, before any of it leaves your device. We protect it with encryption in transit and at rest, private storage that cannot be accessed publicly, short-lived download links, and access restricted to the minimum each component needs. If you do not consent, you can still use the free dashboard, which runs entirely in your browser and sends none of your statement data anywhere.</p>
+
+  <h2>5. What we never do</h2>
   <ul>
     <li>We do not keep your M-Pesa statement, transaction history, or any extracted financial data beyond the short processing window described in Section 3 — your PDF is never uploaded, the data used to build your workbook is deleted as soon as it is built, and the finished workbook is deleted within two days.</li>
     <li>We do not sell, rent, or share your data with advertisers or third parties.</li>
@@ -74,31 +83,32 @@ footer{text-align:center;font-size:11px;color:#9CA3AF;padding:2rem 1rem}
     <li>We do not require an account, email, or personal details for the Free or Pay As You Go tiers.</li>
   </ul>
 
-  <h2>5. Payment data</h2>
+  <h2>6. Payment data</h2>
   <p>When you initiate a payment via M-Pesa STK Push, we record your phone number, payment amount, plan, payment status (pending, paid, or failed), and M-Pesa receipt number where applicable. This is standard transaction record-keeping, similar to any business that accepts M-Pesa payments. We retain records of successful payments to reconcile our records with Safaricom, resolve payment disputes, and meet our own accounting and tax obligations. Records of attempts that failed or were cancelled are deleted automatically after 30 days. When you pay, your payment record also includes the anonymous usage identifier described in Section 2, so that we can understand how paying customers use the product. We do not store your M-Pesa PIN at any point — this is entered directly on your phone via Safaricom's own secure prompt and never passes through our systems.</p>
 
-  <h2>6. Your rights</h2>
+  <h2>7. Your rights</h2>
   <p>Under Kenya's Data Protection Act, 2019, you have the right to:</p>
   <ul>
-    <li>Know what data we hold about you (in practice, this is minimal — see Section 4)</li>
+    <li>Know what data we hold about you (in practice, this is minimal — see Section 5)</li>
     <li>Request correction or deletion of any data we do hold</li>
     <li>Object to processing of your data</li>
+    <li>Withdraw your consent at any time — this does not affect processing already carried out, or payment records we must keep by law</li>
     <li>Lodge a complaint with the Office of the Data Protection Commissioner (ODPC) if you believe your rights have been violated</li>
   </ul>
   <p>To exercise any of these rights, email <a href="mailto:privacy@chechetech.co.ke">privacy@chechetech.co.ke</a>.</p>
 
-  <h2>7. Security</h2>
+  <h2>8. Security</h2>
   <p>All data in transit is encrypted via HTTPS/TLS, and workbook data is also encrypted while it is briefly stored. The storage used for formatting is private — it cannot be browsed or accessed publicly — and each download link is unique to your workbook and expires after 10 minutes. Please do not share a download link while it is active. Our infrastructure runs on Amazon Web Services (AWS), with access restricted to the minimum each component needs. Because your financial data is deleted within the short windows described above, the risk of a data breach affecting it is minimised by design.</p>
 
-  <h2>8. Children's privacy</h2>
+  <h2>9. Children's privacy</h2>
   <p>Cheche is intended for use by adults managing their own or their business's financial records. We do not knowingly collect data from minors.</p>
 
-  <h2>9. Changes to this policy</h2>
+  <h2>10. Changes to this policy</h2>
   <p>We may update this policy from time to time. The "Last updated" date at the top will reflect any changes. Continued use of the service after changes constitutes acceptance of the updated policy.</p>
 
-  <h2>10. Contact us</h2>
-  <p>Cheche Technologies<br>
-  Nairobi, Kenya<br>
+  <h2>11. Contact us</h2>
+  <p>Cheche Technologies (CHECHE INNOVATIONS AFRICA, BN-EOSBRJZP)<br>
+  P.O. Box 13382-00100, Nairobi, Kenya<br>
   Email: <a href="mailto:privacy@chechetech.co.ke">privacy@chechetech.co.ke</a><br>
   Web: <a href="https://chechetech.co.ke">chechetech.co.ke</a></p>
 
