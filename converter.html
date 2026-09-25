@@ -191,6 +191,7 @@ nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem
 .btn-reset{padding:8px;background:transparent;color:var(--grey);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;width:100%}
 .btn-reset:hover{background:var(--bg)}
 .error-box{padding:12px 14px;background:var(--red-light);border:1px solid #FFCDD2;border-radius:8px;font-size:13px;color:var(--red)}
+.cap-notice{background:#FFF8E1;border:1px solid #FFE082;border-left:4px solid #F57C00;border-radius:8px;padding:10px 14px;margin:0 18px 10px;font-size:12.5px;line-height:1.55;color:#5D4037}.cap-notice strong{color:#E65100}.cap-notice a{color:#E65100;font-weight:600}
 .filter-bar{background:var(--blue-light);border:1px solid #90CAF9;border-radius:8px;padding:8px 12px;margin:0 18px 10px;font-size:12px;color:var(--blue)}
 
 /* Table */
@@ -1036,6 +1037,22 @@ async function processFile(){
   }
 }
 
+// ── Safaricom statement cap ──
+// Safaricom full statements stop at 10,000 transactions (confirmed on real 2-year statements:
+// the PDF's last row is the 10,000th, with older months silently left out).
+const SAFARICOM_STATEMENT_CAP=10000;
+function _fmtDay(dt){
+  const d=new Date(String(dt||'').substring(0,10)+'T00:00:00');
+  return isNaN(d)?String(dt||'').substring(0,10):d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+function _capNotice(){
+  const all=(extractedData&&extractedData.allTransactions)||[];
+  if(all.length<SAFARICOM_STATEMENT_CAP) return '';
+  const dates=all.map(t=>String(t.datetime||'')).filter(Boolean).sort();
+  if(!dates.length) return '';
+  return `<div class="cap-notice">⚠️ <strong>Your statement may be incomplete.</strong> Safaricom statements stop at ${SAFARICOM_STATEMENT_CAP.toLocaleString()} transactions, and yours has reached that limit. It covers <strong>${_fmtDay(dates[0])} – ${_fmtDay(dates[dates.length-1])}</strong>. For earlier months, request a separate statement ending on ${_fmtDay(dates[0])} and convert it too. <a href="/how-to-get-mpesa-statement.html#long-statements" target="_blank" rel="noopener">Why this happens</a></div>`;
+}
+
 function showResults(transactions,totalAll,totalIn,totalOut,net,cleanIn,cleanOut,fulizaAwarded,fulizaRecovered,fulizaNetCost,count,method,activeFilters,catList,payeeList,monthList){
   const absOut=Math.abs(totalOut);
   const fmt=n=>Math.abs(n).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1188,6 +1205,7 @@ function showResults(transactions,totalAll,totalIn,totalOut,net,cleanIn,cleanOut
         ${methodBadge}
       </div>
       ${isFiltered?`<div class="filter-bar">🔍 Showing <strong>${count.toLocaleString()}</strong> of ${totalAll.toLocaleString()} matching: ${(activeFilters||[]).map(t=>'<strong>"'+t+'"</strong>').join(', ')}</div>`:''}
+      ${_capNotice()}
       <div class="kpi-note">Actual cash flow — Fuliza excluded</div>
       <div class="kpi-grid">
         <div class="kpi-card green"><div class="kpi-label">Total Received</div><div class="kpi-value green">KES ${fmt(cleanIn)}</div></div>
