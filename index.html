@@ -199,6 +199,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,248,240,
 .nav-links{display:flex;align-items:center;gap:28px}
 .nav-links a{font-size:14px;color:var(--grey);text-decoration:none;font-weight:500;transition:color .2s}
 .nav-links a:hover{color:var(--green)}
+.nav-links a.nav-getstmt{color:var(--green);font-weight:600;border:1.5px solid #C8E6C9;background:var(--white);padding:8px 14px;border-radius:8px}.nav-links a.nav-getstmt:hover{background:var(--green-light)}
+.stmt-callout{display:flex;align-items:center;gap:14px;max-width:520px;background:var(--white);border:2px solid var(--green);border-radius:14px;padding:14px 18px;margin:-20px 0 8px;text-decoration:none;color:var(--ink);box-shadow:0 4px 14px rgba(0,122,61,.10);transition:transform .15s,box-shadow .15s}
+.stmt-callout:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,122,61,.18)}
+.stmt-callout .sc-icon{font-size:28px;flex-shrink:0}.stmt-callout .sc-text{font-size:14px;line-height:1.45;color:var(--grey)}.stmt-callout .sc-text strong{display:block;font-size:15.5px;color:var(--ink)}
+.stmt-callout .sc-arrow{margin-left:auto;font-size:22px;color:var(--green);font-weight:700;flex-shrink:0}
 .nav-cta{background:var(--green);color:white;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;transition:background .2s}
 .nav-cta:hover{background:var(--green-dark)}
 
@@ -384,6 +389,7 @@ footer{background:var(--ink);padding:60px 5% 32px}
       <span class="nav-logo-text">Cheche<span>Tech</span></span>
     </a>
     <div class="nav-links">
+      <a href="/how-to-get-mpesa-statement.html" class="nav-getstmt">📱 Get your statement</a>
       <a href="#features">Features</a>
       <a href="#how">How it works</a>
       <a href="#pricing">Pricing</a>
@@ -402,13 +408,18 @@ footer{background:var(--ink);padding:60px 5% 32px}
       <p class="hero-sub">Upload your Safaricom M-Pesa statement and get a fully analysed Excel file with charts, payee breakdown, and monthly trends — in seconds.</p>
       <ul class="trust-chips">
         <li>🔒 Your statement never leaves your phone</li>
-        <li>📄 No page limits — even 2-year statements</li>
+        <li>📄 No page limits — reads your whole PDF</li>
         <li>✋ No sign-up, no account</li>
       </ul>
       <div class="hero-actions">
         <a href="https://chechetech.co.ke/converter.html" class="btn-primary">⚡ Convert for Free</a>
         <a href="#how" class="btn-secondary">See how it works</a>
       </div>
+      <a href="/how-to-get-mpesa-statement.html" class="stmt-callout">
+        <span class="sc-icon">📱</span>
+        <span class="sc-text"><strong>Don't have your M-Pesa statement yet?</strong>Get it from Safaricom in about 2 minutes — via the app or *334#</span>
+        <span class="sc-arrow">→</span>
+      </a>
       <div class="privacy-strip">
         <span style="font-size:22px">🔐</span>
         <p>Your PDF is read locally in your browser and is never uploaded. If you buy the Excel workbook, its data is formatted in private, encrypted storage and deleted automatically.</p>
