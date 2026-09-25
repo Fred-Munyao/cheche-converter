@@ -191,6 +191,10 @@ footer{background:var(--ink);padding:60px 5% 32px}
 .footer-badge{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:6px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.04em}
 
 /* ── PRIVACY BADGE ── */
+.trust-chips{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin:-8px 0 28px}.trust-chips li{background:var(--white);border:1px solid #C8E6C9;color:var(--ink);font-size:13px;font-weight:500;padding:7px 12px;border-radius:99px}
+.get-statement{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:28px;margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:28px}.get-statement h3{grid-column:1/-1;font-size:20px;color:var(--ink)}.get-statement h4{font-size:15px;color:var(--green);margin-bottom:10px}.get-statement ol{padding-left:20px;font-size:14px;color:var(--grey);line-height:1.8}.get-statement .gs-note{grid-column:1/-1;font-size:13px;color:var(--grey);background:var(--mint);border-radius:10px;padding:12px 14px}
+@media(max-width:768px){.get-statement{grid-template-columns:1fr}}
+.wa-float{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.2);z-index:999;transition:transform .2s}.wa-float:hover{transform:scale(1.07)}.wa-float svg{width:30px;height:30px;fill:#fff}
 .privacy-strip{background:var(--green-light);border:1px solid #C8E6C9;border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:12px;margin-top:24px;max-width:480px}
 .privacy-strip p{font-size:13px;color:var(--green);font-weight:500}
 
@@ -230,7 +234,12 @@ footer{background:var(--ink);padding:60px 5% 32px}
     <div class="hero-content">
       <div class="hero-eyebrow"><span></span> Built for Kenya, by Kenya</div>
       <h1>Turn your M-Pesa PDF into a <em>powerful</em> financial report</h1>
-      <p class="hero-sub">Upload your Safaricom M-Pesa statement and get a fully analysed Excel file with charts, payee breakdown, and monthly trends — in seconds. No signup required. Your PDF never leaves your device — it's read right in your browser.</p>
+      <p class="hero-sub">Upload your Safaricom M-Pesa statement and get a fully analysed Excel file with charts, payee breakdown, and monthly trends — in seconds.</p>
+      <ul class="trust-chips">
+        <li>🔒 Your statement never leaves your phone</li>
+        <li>📄 No page limits — even 2-year statements</li>
+        <li>✋ No sign-up, no account</li>
+      </ul>
       <div class="hero-actions">
         <a href="https://chechetech.co.ke/converter.html" class="btn-primary">⚡ Convert for Free</a>
         <a href="#how" class="btn-secondary">See how it works</a>
@@ -381,6 +390,28 @@ footer{background:var(--ink);padding:60px 5% 32px}
         <div class="step-desc">Get a beautifully formatted 7-sheet Excel workbook with your dashboard, all transactions, payee ranking, categories, top transactions, and monthly summary.</div>
       </div>
     </div>
+    <div class="get-statement" id="get-statement">
+      <h3>Don't have your statement yet? Here's how to get it</h3>
+      <div>
+        <h4>📱 On the M-PESA or MySafaricom app</h4>
+        <ol>
+          <li>Open M-PESA and go to <strong>Statements</strong></li>
+          <li>Choose to export or request a full statement</li>
+          <li>Pick the period you need — up to 2 years works with Cheche</li>
+          <li>Enter your email address and confirm</li>
+        </ol>
+      </div>
+      <div>
+        <h4>☎️ By USSD — dial *334#</h4>
+        <ol>
+          <li>Dial <strong>*334#</strong> and choose <strong>My Account</strong></li>
+          <li>Select <strong>M-PESA Statement</strong>, then request a statement</li>
+          <li>Choose the period and enter your email address</li>
+          <li>Confirm with your M-PESA PIN</li>
+        </ol>
+      </div>
+      <p class="gs-note">📧 Safaricom emails the PDF within a few minutes and sends the password by SMS. Upload the PDF exactly as it arrives, and enter the SMS code on the converter. Menu names can vary slightly between app versions.</p>
+    </div>
   </div>
 </section>
 
@@ -429,7 +460,7 @@ footer{background:var(--ink);padding:60px 5% 32px}
         <div class="price-badge">BEST VALUE</div>
         <div class="price-tier">Professional</div>
         <div class="price-name" style="font-size:22px">KES 799 <span style="font-size:14px;font-weight:400;opacity:.85">/ month</span></div>
-        <div style="font-size:13px;color:rgba(255,255,255,.8);margin-bottom:16px">30 statements/month — pays for itself from the 3rd statement</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.8);margin-bottom:16px">30 statements/month — about KES 27 each, any length, no page limits</div>
         <div class="price-desc">For accountants, bookkeepers, and loan officers processing multiple client statements every month.</div>
         <ul class="price-features">
           <li>30 statements per month</li>
@@ -445,10 +476,10 @@ footer{background:var(--ink);padding:60px 5% 32px}
       <div class="price-card">
         <div class="price-tier">Business</div>
         <div class="price-name" style="font-size:22px">KES 2,499 <span style="font-size:14px;font-weight:400;opacity:.7">/ month</span></div>
-        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:16px">Unlimited — built for teams and firms</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:16px">Unlimited statements, API access &amp; 5 users</div>
         <div class="price-desc">For SACCOs, microfinance institutions, bookkeeping firms and financial teams processing statements at scale.</div>
         <ul class="price-features">
-          <li>Unlimited statements</li>
+          <li>Unlimited statements (fair use)</li>
           <li>API access for integration</li>
           <li>White-label Excel output</li>
           <li>Up to 5 team members</li>
@@ -517,6 +548,14 @@ footer{background:var(--ink);padding:60px 5% 32px}
       <div class="faq-item">
         <div class="faq-q">Is my M-Pesa data safe? <span>→</span></div>
         <div class="faq-a">Yes — and here's exactly how. Your PDF is read entirely within your browser and is never uploaded, and your dashboard is built there too. Only if you buy the Excel workbook are the extracted transactions uploaded — over encrypted HTTPS, to private encrypted storage — so we can format them. That upload is deleted as soon as your workbook is built, and the finished workbook is deleted automatically within two days. We keep your payment record (phone number, amount, and M-Pesa receipt) because proper payment records are needed for reconciliation and accounting, plus anonymous usage statistics that never include your statement. Your transactions, balances, and statement contents are never sold, shared, or written to our logs. Full details are in our <a href="/privacy.html">Privacy Policy</a>.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Is there a page or size limit? <span>→</span></div>
+        <div class="faq-a">No. Cheche reads your whole statement in one go — no page caps, no splitting your PDF into parts. We have tested full 2-year statements with 10,000+ transactions, and Pay As You Go costs the same KES 299 whatever the length.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How do I get my M-Pesa statement? <span>→</span></div>
+        <div class="faq-a">Request it from the M-PESA or MySafaricom app, or dial *334# and go to My Account → M-PESA Statement. Safaricom emails you the PDF and sends the password by SMS. <a href="#get-statement">See the step-by-step guide</a>.</div>
       </div>
       <div class="faq-item">
         <div class="faq-q">What if my statement is password protected? <span>→</span></div>
@@ -628,5 +667,6 @@ document.querySelectorAll('.feature-card,.step-card,.price-card,.testimonial-car
   observer.observe(el);
 });
 </script>
+<a class="wa-float" href="https://wa.me/254722117885?text=Hi%20Cheche%2C%20I%20have%20a%20question%20about%20the%20M-Pesa%20Statement%20Converter" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp" title="Chat with us on WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.8-3.8-1.8-5.9C5 9.9 9.9 5.2 16 5.2S27 9.9 27 15.8s-4.9 10.6-11 10.6zm6-7.9c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1-2.5c-.3-.7-.5-.6-.8-.6h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.2 1.4 3.5c.2.2 2.4 3.6 5.8 5.1 2.8 1.1 3.4.9 4 .8.6-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.6-.4z"/></svg></a>
 </body>
 </html>
