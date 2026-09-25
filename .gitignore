@@ -6,3 +6,6 @@ Thumbs.db
 .vscode/
 Old version one free coversion/
 *.bak
+
+# payment exports contain customer phone numbers
+*.csv

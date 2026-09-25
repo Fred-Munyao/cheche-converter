@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /backup/
+
+Sitemap: https://chechetech.co.ke/sitemap.xml
