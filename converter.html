@@ -191,6 +191,11 @@ nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem
 .btn-reset{padding:8px;background:transparent;color:var(--grey);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;width:100%}
 .btn-reset:hover{background:var(--bg)}
 .error-box{padding:12px 14px;background:var(--red-light);border:1px solid #FFCDD2;border-radius:8px;font-size:13px;color:var(--red)}
+.rec-mode .wa-float{display:none!important}
+.stmt-banner{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:11px 14px;border:1.5px solid var(--green);border-radius:10px;background:#F5FBF7;text-decoration:none;color:#1B5E20;font-size:13px;line-height:1.35}
+.stmt-banner:hover{background:#E8F5E9}.stmt-banner .sb-ic{font-size:20px}.stmt-banner .sb-ar{margin-left:auto;font-weight:700;font-size:16px}
+.sample-btn{display:block;width:100%;margin-top:10px;padding:10px 12px;border:1.5px dashed #C8E6C9;border-radius:10px;background:#F5FBF7;color:#1B5E20;font-size:13px;cursor:pointer;font-family:inherit}.sample-btn:hover{background:#E8F5E9}.sample-btn:disabled{opacity:.6;cursor:wait}
+.sample-badge{margin-top:8px;padding:9px 12px;border-radius:8px;background:#FFF8E1;border:1px solid #FFE082;color:#5D4037;font-size:12px;line-height:1.5}
 .cap-notice{background:#FFF8E1;border:1px solid #FFE082;border-left:4px solid #F57C00;border-radius:8px;padding:10px 14px;margin:0 18px 10px;font-size:12.5px;line-height:1.55;color:#5D4037}.cap-notice strong{color:#E65100}.cap-notice a{color:#E65100;font-weight:600}
 .filter-bar{background:var(--blue-light);border:1px solid #90CAF9;border-radius:8px;padding:8px 12px;margin:0 18px 10px;font-size:12px;color:var(--blue)}
 
@@ -269,13 +274,17 @@ footer{text-align:center;font-size:11px;color:#9CA3AF;padding:2rem 1rem}
         <div class="card-sub">PDF only · password-protected supported</div>
       </div>
       <div class="card-body">
+        <a class="stmt-banner" href="/how-to-get-mpesa-statement.html" target="_blank" rel="noopener">
+          <span class="sb-ic">📱</span><span class="sb-tx"><strong>No statement yet?</strong> Get it from Safaricom in about 2 minutes</span><span class="sb-ar">→</span>
+        </a>
         <label for="file-input" class="upload-zone" id="drop-zone">
           <div class="upload-icon">📄</div>
           <div class="upload-title">Drop your M-Pesa PDF here</div>
           <div class="upload-sub">or click to browse</div>
         </label>
         <input type="file" id="file-input" accept=".pdf" style="display:none"/>
-        <div style="text-align:center;font-size:12.5px;color:var(--grey);margin-top:8px">📱 Don't have your statement yet? <a href="/how-to-get-mpesa-statement.html" target="_blank" rel="noopener" style="color:var(--green);font-weight:600">Get it in about 2 minutes →</a></div>
+        <button type="button" id="sample-btn" class="sample-btn" onclick="loadSample()">🧪 Or <strong>try a sample statement</strong> — see the dashboard instantly</button>
+        <div id="sample-badge" class="sample-badge" style="display:none">Sample statement loaded — fictional data, 12 months of transactions. Click <strong>Convert</strong> to see the dashboard.</div>
         <div id="file-info" style="display:none" class="file-chip">
           <span>📋</span>
           <span class="file-chip-name" id="file-name-label"></span>
@@ -309,7 +318,7 @@ footer{text-align:center;font-size:11px;color:#9CA3AF;padding:2rem 1rem}
         <div class="pw-hint">Type a name, business, or keyword. Separate multiple with a comma.</div>
         <div class="input-row">
           <input type="text" class="text-input" id="filter-input"
-                 placeholder="e.g. Adam Kamau, Family Bank, KPLC..."
+                 placeholder="e.g. City Grocers, Jirani SACCO, airtime..."
                  onkeydown="handleFilterKey(event)"/>
           <button class="btn-toggle" onclick="clearAllFilters()">✕</button>
         </div>
@@ -526,8 +535,11 @@ dropZone.addEventListener('drop',e=>{
 });
 fileInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0])});
 
-function handleFile(file){
+let _isSample=false;   // true when the synthetic sample statement is loaded
+function handleFile(file,isSample){
+  _isSample=!!isSample;
   selectedFile=file;
+  const sb=document.getElementById('sample-badge'); if(sb) sb.style.display=_isSample?'block':'none';
   document.getElementById('file-name-label').textContent=file.name;
   document.getElementById('file-size-label').textContent=(file.size/1024).toFixed(0)+' KB';
   document.getElementById('file-info').style.display='flex';
@@ -758,7 +770,7 @@ function extractPayee(detail){
 function categorise(detail,paid_in,withdrawn){
   const d=(detail||'').toLowerCase();
   if(paid_in&&paid_in>0){
-    if(d.includes('business payment')||d.includes('family bank')||d.includes('equity')||d.includes('kcb')||d.includes('ncba')||d.includes('co-op')||d.includes('mombo')||d.includes('sacco')) return 'Money Received (Bank/SACCO)';
+    if(d.includes('business payment')||d.includes('family bank')||d.includes('equity')||d.includes('kcb')||d.includes('ncba')||d.includes('co-op')||d.includes('sacco')) return 'Money Received (Bank/SACCO)';
     if(d.includes('overdraft of credit')||d.includes('fuliza')) return 'Fuliza / Overdraft Credit';
     if(d.includes('funds received')||d.includes('paypal deposit')||d.includes('reversal')) return 'Money Received (M-Pesa)';
     return 'Money Received';
@@ -1192,7 +1204,9 @@ function showResults(transactions,totalAll,totalIn,totalOut,net,cleanIn,cleanOut
       </div>`;
   }
 
-  const dlLabel=_paidForCurrent
+  const dlLabel=_isSample
+    ?`📄 Upload your own statement to get your workbook`
+    :_paidForCurrent
     ?`⬇️ Download Your Excel Workbook`
     :`🔓 Unlock Full Excel Workbook — KES 299`;
   const downloadButtons=`<div id="dl-error" style="display:none" class="dl-error"></div>
@@ -1524,6 +1538,28 @@ function _clientId(){
 }
 const _utm=(()=>{ try{ const q=new URLSearchParams(location.search); return {utm_source:q.get('utm_source')||undefined, utm_campaign:q.get('utm_campaign')||undefined}; }catch(e){ return {}; } })();
 const _ref=(()=>{ try{ return document.referrer?new URL(document.referrer).hostname:undefined; }catch(e){ return undefined; } })();
+// ── SAMPLE STATEMENT ──
+// Fully synthetic statement (fictional names, DEM receipts) — safe for public demos and screen recordings.
+const SAMPLE_URL='/demo/cheche-sample-statement.pdf';
+async function loadSample(){
+  const btn=document.getElementById('sample-btn');
+  try{
+    if(btn){btn.disabled=true;btn.textContent='Loading sample…';}
+    const r=await fetch(SAMPLE_URL,{cache:'force-cache'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const blob=await r.blob();
+    handleFile(new File([blob],'cheche-sample-statement.pdf',{type:'application/pdf'}),true);
+    const pw=document.getElementById('pw-input'); if(pw) pw.value='';
+  }catch(e){ alert('Sorry, the sample statement could not be loaded. Please try again.'); }
+  finally{ if(btn){btn.disabled=false;btn.innerHTML='🧪 Or <strong>try a sample statement</strong> — see the dashboard instantly';} }
+}
+try{
+  const _q=new URLSearchParams(location.search);
+  if(_q.get('sample')==='1') window.addEventListener('load',()=>loadSample());
+  // Recording mode (?rec=1): hide floating widgets so screen recordings stay clean
+  if(_q.get('rec')==='1') document.documentElement.classList.add('rec-mode');
+}catch(e){}
+
 function track(event,meta){
   try{
     const payload=JSON.stringify({client_id:_clientId(),event,meta:Object.assign({ref:_ref},_utm,meta||{})});
@@ -1534,8 +1570,8 @@ function track(event,meta){
     }
   }catch(e){}
 }
-track('page_view');
 const PAYMENT_API  = 'https://jkv6ay89l0.execute-api.us-east-1.amazonaws.com/prod';
+track('page_view');   // must run after PAYMENT_API is defined, or it fails silently
 let _selectedPlan   = 'payg';
 let _pendingDownload = false;   // true when the paywall was opened by a download attempt
 let _paidForCurrent = false;    // true once THIS statement's workbook has been paid for
@@ -1568,7 +1604,12 @@ let _pollInterval   = null;
 
 // Opens the paywall in the context of unlocking the workbook (button click or a
 // locked teaser inside the dashboard). `source` is for analytics only.
+function _sampleUnlockNotice(){
+  const ok=confirm('This is a sample statement with fictional data, so there\'s no workbook to buy.\n\nUpload your own M-Pesa statement to see YOUR dashboard and get your full Excel workbook.\n\nChoose your statement now?');
+  if(ok){ const fi=document.getElementById('file-input'); if(fi){ fi.value=''; fi.click(); } }
+}
 function _requestUnlock(source){
+  if(_isSample){ _sampleUnlockNotice(); return; }   // never sell a workbook built from the fictional sample
   track('paywall_shown',{source});
   _pendingDownload = true;
   showPaywall();
@@ -1633,7 +1674,7 @@ function initiatePayment(){
   fetch(PAYMENT_API+'/stkpush',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({phone,plan,client_id:_clientId(),consent_xb:true,consent_version:XB_CONSENT_VERSION})
+    body:JSON.stringify({phone,plan,client_id:_clientId(),consent_xb:true,consent_version:XB_CONSENT_VERSION,is_sample:_isSample})
   })
   .then(r=>r.json())
   .then(data=>{
@@ -1717,7 +1758,7 @@ function _handleGateRejection(info, errBox){
 // Conversion and the live dashboard are always free and unlimited — no gating here.
 const _runProcess = processFile;
 processFile = function(){
-  track('convert_start',{file_kb:selectedFile?Math.round(selectedFile.size/1024):undefined});
+  track('convert_start',{file_kb:selectedFile?Math.round(selectedFile.size/1024):undefined,method:_isSample?'sample':undefined});
   _runProcess();
 };
 
